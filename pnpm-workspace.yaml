@@ -1,2 +1,4 @@
-packages: 
+packages:
   - "apps/*"
+  - "api-getway"
+  - "api-getway-e2e"

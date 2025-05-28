@@ -1,0 +1,29 @@
+{
+  "name": "@org/api-getway",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@org/api-getway:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@org/api-getway:build:development"
+          },
+          "production": {
+            "buildTarget": "@org/api-getway:build:production"
+          }
+        }
+      }
+    }
+  }
+}

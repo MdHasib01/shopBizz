@@ -1,14 +1,20 @@
-import express from 'express';
-
-const host = process.env.HOST ?? 'localhost';
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+import express from "express";
+import cors from "cors";
 
 const app = express();
-
-app.get('/', (req, res) => {
-    res.send({ 'message': 'Hello API'});
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    allowedHeaders: ["Authorization", "Content-Type"],
+    credentials: true,
+  })
+);
+app.get("/", (req, res) => {
+  res.send({ message: "Hello API" });
 });
+const port = process.env.PORT ?? 6001;
 
-app.listen(port, host, () => {
-    console.log(`[ ready ] http://${host}:${port}`);
+const server = app.listen(port, () => {
+  console.log(`Auth Service is Listening at http://localhost:${port}`);
 });
+server.on("error", console.error);

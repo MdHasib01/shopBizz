@@ -25,5 +25,9 @@
         }
       }
     }
+  },
+  "dependencies": {
+    "express-http-proxy": "^2.1.1",
+    "swagger-ui-express": "^5.0.1"
   }
 }

@@ -1,5 +1,8 @@
 import crypto from "crypto";
 import { ValidationError } from "../../../../packages/errorHandler";
+import { NextFunction } from "express";
+import { sendEmail } from "./sendMail/index";
+import redis from "../../../../packages/libs/redis/index";
 
 const emailRegex =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -22,4 +25,50 @@ export const validateRegistrationData = (
   }
 };
 
-export const sendOtp = async (name: string, email: string) => {};
+export const checkOtpRestrictions = async (
+  email: string,
+  next: NextFunction
+) => {
+  if (await redis.get(`otp_lock:${email}`)) {
+    return next(
+      new ValidationError(
+        "Your account is locked due to multiple failed attempts. Try after 30 minutes"
+      )
+    );
+  }
+
+  if (await redis.get(`otp_spam_lock:${email}`)) {
+    return next(
+      new ValidationError("Too many otp requests, please wait 1 hour!")
+    );
+  }
+
+  if (await redis.get(`otp_cooldown:${email}`)) {
+    return next(new ValidationError("Please wait for 1 minute!"));
+  }
+};
+
+export const trackOtpRequests = async (email: string, next: NextFunction) => {
+  const otpRequestKey = `otp_request_count:${email}`;
+  let otpRequests = parseInt((await redis.get(otpRequestKey)) || "0");
+
+  if (otpRequests >= 2) {
+    await redis.set(`otp_spam_lock:${email}`, "locked", "EX", 3600);
+    return next(
+      new ValidationError("Too many otp requests, please wait 1 hour!")
+    );
+  }
+
+  await redis.set(otpRequestKey, otpRequests + 1, "EX", 3600);
+};
+export const sendOtp = async (
+  name: string,
+  email: string,
+  template: string
+) => {
+  const otp = crypto.randomInt(1000, 9999).toString();
+  await sendEmail(email, "OTP Verification", template, { name, otp });
+  await redis.set(`otp:${email}`, otp, "EX", 300);
+  await redis.set(`otp_cooldown:${email}`, "true", "EX", 60);
+  return otp;
+};

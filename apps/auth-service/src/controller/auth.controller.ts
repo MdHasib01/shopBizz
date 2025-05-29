@@ -1,5 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { validateRegistrationData } from "../utils/auth.helper";
+import {
+  checkOtpRestrictions,
+  sendOtp,
+  trackOtpRequests,
+  validateRegistrationData,
+} from "../utils/auth.helper";
 import prisma from "../../../../packages/libs/prisma";
 import { BadRequestError } from "../../../../packages/errorHandler";
 
@@ -9,16 +14,20 @@ export const userRegistration = async (
   res: Response,
   next: NextFunction
 ) => {
-  validateRegistrationData(req.body, "user");
-  const { email, name, password, phone_number, country } = req.body;
+  try {
+    validateRegistrationData(req.body, "user");
+    const { email, name, password, phone_number, country } = req.body;
 
-  const existingUser = await prisma.users.findUnique({ where: { email } });
-  if (existingUser) {
-    throw new BadRequestError("User already exists with this email");
+    const existingUser = await prisma.users.findUnique({ where: { email } });
+    if (existingUser) {
+      throw new BadRequestError("User already exists with this email");
+    }
+
+    await checkOtpRestrictions(email, next);
+    await trackOtpRequests(email, next);
+    await sendOtp(name, email, "user-activation-mail");
+    return res.status(200).json({ message: "OTP sent successfully" });
+  } catch (error) {
+    return next(error);
   }
-
-  const user = await prisma.users.create({
-    data: { email, name, password, phone_number, country, role: "user" },
-  });
-  res.json(user);
 };

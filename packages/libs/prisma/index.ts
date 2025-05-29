@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client/extension";
-import exp from "constants";
 
 declare global {
   namespace globalThis {

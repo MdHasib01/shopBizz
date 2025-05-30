@@ -3,12 +3,17 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {
   checkOtpRestrictions,
+  handleForgotPassword,
   sendOtp,
   trackOtpRequests,
   validateRegistrationData,
   verifyOtp,
+  verifyResetPasswordOtp,
 } from "../utils/auth.helper";
-import { BadRequestError } from "../../../../packages/errorHandler";
+import {
+  BadRequestError,
+  ValidationError,
+} from "../../../../packages/errorHandler";
 import prisma from "../../../../packages/libs/prisma";
 import { setCookies } from "../utils/cookies/setCookies";
 
@@ -136,6 +141,64 @@ export const login = async (
       accessToken,
       refreshToken,
     });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+// user forgot password
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  await handleForgotPassword(req, res, next, "user");
+};
+
+//verify user otp
+export const verifyUserForgotPasswordOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    await verifyResetPasswordOtp(res, req, next);
+  } catch (err) {
+    next(err);
+  }
+};
+
+//Reset User Password
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      throw new ValidationError("Email and password are required! ");
+    }
+    const user = await prisma.users.findUnique({ where: { email } });
+    if (!user) {
+      throw new ValidationError("User Not fould!");
+    }
+
+    //compare password with old one is they same  ---------------
+    const isSamePassword = await bcrypt.compare(newPassword, user.password!);
+
+    if (isSamePassword) {
+      throw new ValidationError("You can not put your old password!");
+    }
+
+    const hasedNewPasswprd = await bcrypt.hash(newPassword, 10);
+
+    await prisma.users.update({
+      where: { email },
+      data: { password: hasedNewPasswprd },
+    });
+
+    res.status(200).json({ message: "Password reset successfully!" });
   } catch (err) {
     return next(err);
   }

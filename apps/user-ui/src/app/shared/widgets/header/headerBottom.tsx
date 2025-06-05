@@ -9,7 +9,7 @@ import { HiOutlineUser } from "react-icons/hi2";
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
-  const [isSticky, setIsSticky] = useState(true);
+  const [isSticky, setIsSticky] = useState(false);
 
   // Track scroll position
   useEffect(() => {

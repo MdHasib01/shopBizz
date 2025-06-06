@@ -39,7 +39,10 @@ const Page = () => {
           </h3>
           <p className="text-center text-gray-500 mb-4">
             Don't have an account?{" "}
-            <span className="text-blue-500 cursor-pointer">Sign up</span>
+            <Link href={"/signup"}>
+              {" "}
+              <span className="text-blue-500 cursor-pointer">Sign up</span>
+            </Link>
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)}>

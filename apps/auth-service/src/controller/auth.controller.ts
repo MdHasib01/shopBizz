@@ -58,7 +58,8 @@ export const verifyUser = async (
     if (existingUser) {
       throw new BadRequestError("User already exists with this email");
     }
-    verifyOtp(email, otp, next);
+
+    await verifyOtp(email, otp, next);
 
     const hashedPasswrd = await bcrypt.hash(password, 10);
 

@@ -81,29 +81,28 @@ export const verifyOtp = async (
   next: NextFunction
 ) => {
   const storedOtp = await redis.get(`otp:${email}`);
-  if (!storedOtp) return next(new ValidationError("Invalid or expired OTP"));
+  if (!storedOtp) {
+    throw new ValidationError("Invalid or expired OTP");
+  }
 
   const failedAttemptsKey = `otp_attempts:${email}`;
   const failedAttempts = parseInt((await redis.get(failedAttemptsKey)) || "0");
+
   if (storedOtp !== otp) {
     if (failedAttempts >= 2) {
       await redis.set(`otp_lock:${email}`, "locked", "EX", 1800);
-      return next(
-        new ValidationError(
-          "Your account is locked due to multiple failed attempts. Try after 30 minutes"
-        )
+      throw new ValidationError(
+        "Your account is locked due to multiple failed attempts. Try after 30 minutes"
       );
     }
     await redis.set(failedAttemptsKey, failedAttempts + 1, "EX", 3600);
-    return next(
-      new ValidationError(
-        `Invalid OTP. You have ${2 - failedAttempts} attempts left`
-      )
+    throw new ValidationError(
+      `Invalid OTP. You have ${2 - failedAttempts} attempts left`
     );
   }
+
   await redis.del(`otp:${email}`, failedAttemptsKey);
 };
-
 //handle forgot password ----
 export const handleForgotPassword = async (
   req: Request,

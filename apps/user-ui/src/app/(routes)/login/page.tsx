@@ -1,13 +1,14 @@
 "use client";
 
+import ErrorAlert from "@/components/ui/errorAlert";
 import GoogleButton from "@/components/ui/googleButton";
-import { error } from "console";
+import useLogin from "@/hooks/login/useLogin";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { LuEye, LuEyeClosed } from "react-icons/lu";
-type FormData = {
+type LoginFormData = {
   email: string;
   password: string;
 };
@@ -15,15 +16,19 @@ const Page = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
+
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm<LoginFormData>();
 
-  const onSubmit = (data: FormData) => {};
+  const loginMutation = useLogin(setServerError, router);
+  const onSubmit = (data: LoginFormData) => {
+    loginMutation.mutate(data);
+  };
   return (
     <div className="w-full py-10 min-h-[85vh] bg-[#f1f1f1]">
       <h1 className="text-4xl font-Poppins font-semibold text-black text-center">
@@ -103,17 +108,16 @@ const Page = () => {
               </Link>
             </div>
             <button
+              disabled={loginMutation.isPending}
               type="submit"
-              className="w-full bg-black text-white py-2 rounded transition duration-300"
+              className="w-full disabled:opacity-50 bg-black text-white py-2 rounded transition duration-300"
             >
-              Login
+              {loginMutation.isPending ? "Loading..." : "Login"}
             </button>
-            {serverError && (
-              <p className="text-red-500 text-sm mt-2">{serverError}</p>
-            )}
+            {serverError && ErrorAlert({ message: serverError })}
           </form>
 
-          <div className="flex items-center my-5 text-gray-400 text-sm">
+          <div className="flex items-center my-5 text-gray-400 text-sm ">
             <div className="flex-1 border-t border-gray-300"></div>
             <span className="px-2">or Sign in with Google</span>
             <div className="flex-1 border-t border-gray-300"></div>

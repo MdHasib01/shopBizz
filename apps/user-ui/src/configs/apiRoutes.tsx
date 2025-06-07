@@ -3,5 +3,6 @@ export const apiConfig = {
   routes: {
     signup: `/api/register`,
     verifyOtp: `/api/verify-otp`,
+    login: `/api/login`,
   },
 };

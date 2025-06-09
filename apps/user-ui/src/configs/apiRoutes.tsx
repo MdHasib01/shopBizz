@@ -4,5 +4,8 @@ export const apiConfig = {
     signup: `/api/register`,
     verifyOtp: `/api/verify-otp`,
     login: `/api/login`,
+    forgotPassword: `/api/forgot-password`,
+    verifyForgotPasswordOtp: `/api/verify-forgot-password`,
+    resetPassword: `/api/reset-password`,
   },
 };

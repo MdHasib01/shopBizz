@@ -70,7 +70,7 @@ const Page = () => {
             <div className="relative">
               <input
                 type={passwordVisible ? "text" : "password"}
-                placeholder="example@example.com"
+                placeholder="password"
                 className="w-full p-2 border border-gray-300 rounded mb-1 outline-0"
                 {...register("password", {
                   required: "Password is required",

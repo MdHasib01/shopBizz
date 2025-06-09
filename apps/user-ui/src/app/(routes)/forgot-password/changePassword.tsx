@@ -1,29 +1,33 @@
 import { useForm } from "react-hook-form";
-import { LuEye, LuEyeClosed } from "react-icons/lu";
+import { CgSpinner } from "react-icons/cg";
 import Link from "next/link";
 import ErrorAlert from "@/components/ui/errorAlert";
-import { SignUpFormData } from "@/types/auth/signup.types";
+import {
+  ChangePasswordForm,
+  ForgotPasswordSubmitForm,
+} from "@/types/auth/forgotPassword.types";
+import { LuEye, LuEyeClosed } from "react-icons/lu";
 
-interface SignupFormProps {
-  onSubmit: (data: SignUpFormData) => void;
+interface ForgotPasswordFormProps {
+  onSubmit: (data: ChangePasswordForm) => void;
   isLoading: boolean;
   serverError: string | null;
   passwordVisible: boolean;
   setPasswordVisible: (visible: boolean) => void;
 }
 
-const SignupForm = ({
+const ChangePassword = ({
   onSubmit,
   isLoading,
   serverError,
   passwordVisible,
   setPasswordVisible,
-}: SignupFormProps) => {
+}: ForgotPasswordFormProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignUpFormData>();
+  } = useForm<ChangePasswordForm>();
 
   return (
     <>
@@ -38,40 +42,13 @@ const SignupForm = ({
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <label className="block text-gray-700 mb-1">Name</label>
-        <input
-          type="name"
-          placeholder="your name"
-          className="w-full p-2 border border-gray-300 rounded mb-1 outline-0"
-          {...register("name", {
-            required: "Name is required",
-          })}
-        />
-        {errors.name && (
-          <p className="text-red-500 text-sm">{String(errors.name.message)}</p>
-        )}
-
-        <label className="block text-gray-700 mb-1">Email</label>
-        <input
-          type="email"
-          placeholder="example@example.com"
-          className="w-full p-2 border border-gray-300 rounded mb-1 outline-0"
-          {...register("email", {
-            required: "Email is required",
-            pattern: /^\S+@\S+\.\S+$/,
-          })}
-        />
-        {errors.email && (
-          <p className="text-red-500 text-sm">{String(errors.email.message)}</p>
-        )}
-
-        <label className="block text-gray-700 mb-1">Password</label>
+        <label className="block text-gray-700 mb-1">New Password</label>
         <div className="relative">
           <input
             type={passwordVisible ? "text" : "password"}
             placeholder="password"
             className="w-full p-2 border border-gray-300 rounded mb-1 outline-0"
-            {...register("password", {
+            {...register("newPassword", {
               required: "Password is required",
               minLength: {
                 value: 8,
@@ -87,9 +64,9 @@ const SignupForm = ({
             {passwordVisible ? <LuEye /> : <LuEyeClosed />}
           </button>
         </div>
-        {errors.password && (
+        {errors.newPassword && (
           <p className="text-red-500 text-sm">
-            {String(errors.password.message)}
+            {String(errors.newPassword.message)}
           </p>
         )}
 
@@ -98,7 +75,14 @@ const SignupForm = ({
           disabled={isLoading}
           className="w-full disabled:bg-gray-700 disabled:text-gray-200 bg-black text-white py-2 rounded transition duration-300 mt-4"
         >
-          {isLoading ? "Signing up..." : "Sign up"}
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <CgSpinner className="animate-spin" />
+              Submitting...
+            </span>
+          ) : (
+            "Submit"
+          )}
         </button>
         {serverError && ErrorAlert({ message: serverError })}
       </form>
@@ -106,4 +90,4 @@ const SignupForm = ({
   );
 };
 
-export default SignupForm;
+export default ChangePassword;

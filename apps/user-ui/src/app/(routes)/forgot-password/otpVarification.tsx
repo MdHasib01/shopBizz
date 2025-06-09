@@ -1,11 +1,11 @@
 import { useRef, useEffect } from "react";
 import ErrorAlert from "@/components/ui/errorAlert";
-import { SignUpFormData } from "@/types/auth/signup.types";
+import { ForgotPasswordSubmitForm } from "@/types/auth/forgotPassword.types";
 
 interface OtpVerificationProps {
   otp: string[];
   setOtp: (otp: string[]) => void;
-  userData: SignUpFormData | null;
+  userData: ForgotPasswordSubmitForm | null;
   isVerifying: boolean;
   canResend: boolean;
   timer: number;

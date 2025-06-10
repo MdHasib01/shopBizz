@@ -15,7 +15,8 @@ const useLogin = (
     mutationFn: async (data: LoginFormData) => {
       const response = await axios.post(
         `${apiConfig.baseUrl}${apiConfig.routes.login}`,
-        data
+        data,
+        { withCredentials: true }
       );
       return response.data;
     },

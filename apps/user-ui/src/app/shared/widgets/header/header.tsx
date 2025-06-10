@@ -1,10 +1,14 @@
+"use client";
 import Link from "next/link";
 import { CiSearch } from "react-icons/ci";
 import { AiOutlineHeart } from "react-icons/ai";
 import { HiOutlineUser } from "react-icons/hi2";
 import { RiShoppingCartLine } from "react-icons/ri";
 import HeaderBottom from "./headerBottom";
+import { useUser } from "@/hooks/useUser";
 const Header = () => {
+  const { user, isLoading } = useUser();
+  console.log(user);
   return (
     <div className="w-full bg-white">
       <div className="container flex items-center justify-between py-2">
@@ -34,9 +38,19 @@ const Header = () => {
             </div>
             <div>
               <p className="text-sm font-semibold">Hello,</p>
-              <Link className="text-sm font-semibold" href="/login">
-                Sign In
-              </Link>
+              {user?.name ? (
+                <Link className="text-sm font-semibold" href="/profile">
+                  {user?.name.split(" ")[0]}
+                </Link>
+              ) : (
+                <Link className="text-sm font-semibold" href="/login">
+                  {isLoading ? (
+                    <p className="animate-pulse">. . .</p>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Link>
+              )}
             </div>
           </div>
           <div className="w-6 h-6 flex justify-center items-center relative">

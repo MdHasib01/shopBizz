@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import {
   checkOtpRestrictions,
   handleForgotPassword,
@@ -200,6 +200,63 @@ export const resetPassword = async (
     });
 
     res.status(200).json({ message: "Password reset successfully!" });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+// refresh Token user
+export const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    console.log(refreshToken);
+    if (!refreshToken) {
+      throw new BadRequestError("Missing refresh token");
+    }
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET as string
+    ) as { id: string; role: string };
+
+    if (!decoded || !decoded.id) {
+      throw new JsonWebTokenError("Invalid refresh token");
+    }
+
+    const user = await prisma.users.findUnique({ where: { id: decoded.id } });
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+
+    const newAccessToken = jwt.sign(
+      {
+        id: decoded.id,
+        role: decoded.role,
+      },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    setCookies(res, "accessToken", newAccessToken);
+
+    return res.status(200).json({
+      success: true,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+// Get loggedin User info
+export const getUser = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    return res.status(200).json({ user });
   } catch (err) {
     return next(err);
   }

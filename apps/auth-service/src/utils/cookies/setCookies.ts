@@ -3,8 +3,8 @@ import { Response } from "express";
 export const setCookies = (res: Response, name: string, value: string) => {
   res.cookie(name, value, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: false,
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };

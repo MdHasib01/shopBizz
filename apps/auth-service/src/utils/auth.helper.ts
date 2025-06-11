@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { ValidationError } from "../../../../packages/errorHandler";
 import { NextFunction, Request, Response } from "express";
 import { sendEmail } from "./sendMail/index";
@@ -117,7 +118,10 @@ export const handleForgotPassword = async (
       throw new ValidationError("Missing required fields");
     }
 
-    const user = await prisma.users.findUnique({ where: { email } });
+    const user =
+      userType === "user"
+        ? await prisma.users.findUnique({ where: { email } })
+        : await prisma.sellers.findUnique({ where: { email } });
 
     if (!user) {
       throw new ValidationError("User not found");
@@ -128,7 +132,11 @@ export const handleForgotPassword = async (
     await trackOtpRequests(email, next);
 
     //Generate OTP and send to user
-    await sendOtp(user.name, email, "user-activation-mail");
+    await sendOtp(
+      user.name,
+      email,
+      userType === "user" ? "user-activation-mail" : "user-activation-mail"
+    );
 
     res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
@@ -156,3 +164,80 @@ export const verifyResetPasswordOtp = async (
     next(err);
   }
 };
+
+// verify seller with otp
+export const verifySeller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, otp, name, phone_number, country, password } = req.body;
+    if (!email || !otp || !name || !password || !phone_number || !country) {
+      throw new ValidationError("Missing required fields");
+    }
+
+    const existingSeller = await prisma.sellers.findUnique({ where: email });
+
+    if (existingSeller) {
+      return next(new ValidationError("Seller already exists"));
+    }
+    await verifyOtp(email, otp, next);
+
+    const hashedPasswrd = await bcrypt.hash(password, 10);
+    const seller = await prisma.sellers.create({
+      data: {
+        email,
+        name,
+        password: hashedPasswrd,
+        country,
+        phone_number,
+      },
+    });
+    res.status(200).json({ seller, message: "Seller registered successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// create a new shop
+export const createShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name, bio, address, opening_hours, website, category, sellerId } =
+      req.body;
+
+    if (
+      !name ||
+      !bio ||
+      !address ||
+      !opening_hours ||
+      !website ||
+      !category ||
+      !sellerId
+    ) {
+      throw new ValidationError("Missing required fields");
+    }
+
+    const shopData: any = {
+      name,
+      bio,
+      address,
+      opening_hours,
+      website,
+      category,
+      sellerId,
+    };
+
+    if (website && website.trim() !== "") shopData.website = website;
+    const shop = await prisma.shops.create({ data: shopData });
+    res.status(200).json({ shop, message: "Shop created successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// create stripe connect account link

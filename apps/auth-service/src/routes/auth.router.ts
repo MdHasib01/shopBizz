@@ -4,12 +4,14 @@ import {
   getUser,
   login,
   refreshToken,
+  registerSeller,
   resetPassword,
   userRegistration,
   verifyUser,
   verifyUserForgotPasswordOtp,
 } from "../controller/auth.controller.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
+import { createShop, verifySeller } from "../utils/auth.helper.js";
 
 const router: Router = express.Router();
 
@@ -21,5 +23,8 @@ router.get("/loggedin-user", isAuthenticated, getUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-forgot-password", verifyUserForgotPasswordOtp);
 router.post("/reset-password", resetPassword);
+router.post("/seller-registration", registerSeller);
+router.post("/verify-seller", verifySeller);
+router.post("/create-shop", createShop);
 
 export default router;

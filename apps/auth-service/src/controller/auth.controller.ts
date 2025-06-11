@@ -271,6 +271,20 @@ export const registerSeller = async (
   try {
     validateRegistrationData(req.body, "seller");
     const { name, email } = req.body;
+
+    const existingSeller = await prisma.sellers.findUnique({
+      where: { email },
+    });
+
+    if (existingSeller) {
+      throw new ValidationError("Seller already exists");
+    }
+
+    await checkOtpRestrictions(email, next);
+    await trackOtpRequests(email, next);
+    await sendOtp(name, email, "seller-activation-mail");
+
+    return res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
     next(error);
   }

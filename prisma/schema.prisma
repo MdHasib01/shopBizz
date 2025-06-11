@@ -66,7 +66,7 @@ model sellers {
   phone_number  String
   country       String
   password      String?
-  stripeId      String
+  stripeId      String?
   shop          shops?
   shopId        String?   @db.ObjectId
   shopsId       String?   @db.ObjectId

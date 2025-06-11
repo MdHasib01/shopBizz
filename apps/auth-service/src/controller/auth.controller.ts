@@ -261,3 +261,17 @@ export const getUser = async (req: any, res: Response, next: NextFunction) => {
     return next(err);
   }
 };
+
+// register a new seller
+export const registerSeller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    validateRegistrationData(req.body, "seller");
+    const { name, email } = req.body;
+  } catch (error) {
+    next(error);
+  }
+};

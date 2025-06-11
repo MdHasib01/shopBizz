@@ -1,3 +1,24 @@
 {
   "nxConsole.generateAiAgentRules": true
+  // "workbench.colorTheme": "ShopBizz",
+  // "workbench.colorCustomizations": {
+  //   "activityBar.activeBackground": "#1e3a8a",
+  //   "activityBar.background": "#1e40af",
+  //   "activityBar.foreground": "#e0f2fe",
+  //   "activityBar.inactiveForeground": "#e0f2fe99",
+  //   "activityBarBadge.background": "#2563eb",
+  //   "activityBarBadge.foreground": "#e0f2fe",
+  //   "commandCenter.border": "#e0f2fe99",
+  //   "sash.hoverBorder": "#1e3a8a",
+  //   "statusBar.background": "#1e40af",
+  //   "statusBar.foreground": "#e0f2fe",
+  //   "statusBarItem.hoverBackground": "#1e3a8a",
+  //   "statusBarItem.remoteBackground": "#1e40af",
+  //   "statusBarItem.remoteForeground": "#e0f2fe",
+  //   "titleBar.activeBackground": "#1e40af",
+  //   "titleBar.activeForeground": "#e0f2fe",
+  //   "titleBar.inactiveBackground": "#1e40af99",
+  //   "titleBar.inactiveForeground": "#e0f2fe99"
+  // },
+  // "peacock.color": "#1e40af"
 }

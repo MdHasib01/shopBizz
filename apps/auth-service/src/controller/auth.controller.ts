@@ -269,8 +269,8 @@ export const registerSeller = async (
   next: NextFunction
 ) => {
   try {
-    validateRegistrationData(req.body, "seller");
     const { name, email } = req.body;
+    validateRegistrationData(req.body, "seller");
 
     const existingSeller = await prisma.sellers.findUnique({
       where: { email },
@@ -286,6 +286,6 @@ export const registerSeller = async (
 
     return res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };

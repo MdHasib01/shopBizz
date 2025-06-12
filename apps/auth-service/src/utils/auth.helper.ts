@@ -177,7 +177,9 @@ export const verifySeller = async (
       throw new ValidationError("Missing required fields");
     }
 
-    const existingSeller = await prisma.sellers.findUnique({ where: email });
+    const existingSeller = await prisma.sellers.findUnique({
+      where: { email },
+    });
 
     if (existingSeller) {
       return next(new ValidationError("Seller already exists"));

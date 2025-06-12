@@ -7,9 +7,10 @@ import useOtp from "@/hooks/signup/useOtp";
 import useSignup from "@/hooks/signup/useSignup";
 import SignupForm from "./signupForm";
 import OtpVerification from "./otpVarification";
+import CreateShop from "./createShop";
 
 const Page = () => {
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(2);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showOtp, setShowOtp] = useState(false);
@@ -17,6 +18,7 @@ const Page = () => {
   const [timer, setTimer] = useState(0);
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [userData, setUserData] = useState<SignUpFormData | null>(null);
+  const [sellerId, setSellerId] = useState("");
 
   const router = useRouter();
 
@@ -27,7 +29,9 @@ const Page = () => {
     router,
     setTimer,
     setCanResend,
-    setShowOtp
+    setShowOtp,
+    setSellerId,
+    setActiveStep
   );
 
   // Signup Hook
@@ -100,6 +104,10 @@ const Page = () => {
               />
             )}
           </>
+        )}
+
+        {activeStep === 2 && (
+          <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
         )}
       </div>
     </div>

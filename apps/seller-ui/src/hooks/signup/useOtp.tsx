@@ -11,7 +11,9 @@ const useOtp = (
   router: AppRouterInstance,
   setTimer: (prevTimer: any) => void,
   setCanResend: (canResend: boolean) => void,
-  setShowOtp: (showOtp: boolean) => void
+  setShowOtp: (showOtp: boolean) => void,
+  setSellerId: (sellerId: string) => void,
+  setActiveStep: (activeStep: number) => void
 ) => {
   const startResendTimer = () => {
     const interval = setInterval(() => {
@@ -38,10 +40,11 @@ const useOtp = (
       );
       return response.data;
     },
-    onSuccess: () => {
-      router.push("/login");
+    onSuccess: (data) => {
+      setSellerId(data.seller.id);
+      setActiveStep(2);
       setServerError(null);
-      toast.success("Signup successful");
+      toast.success("OTP verification successful");
     },
     onError: (error: AxiosError) => {
       const errorMessage =

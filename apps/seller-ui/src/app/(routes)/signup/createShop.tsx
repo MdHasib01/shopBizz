@@ -143,7 +143,7 @@ const CreateShop = ({
           disabled={createShopMutaiton?.isPending}
           className="w-full disabled:bg-gray-700 disabled:text-gray-200 bg-black text-white py-2 rounded transition duration-300 mt-4"
         >
-          {createShopMutaiton?.isPending ? "Supping..." : "Submit"}
+          {createShopMutaiton?.isPending ? "Creating..." : "Create"}
         </button>
         {serverError && ErrorAlert({ message: serverError })}
       </form>

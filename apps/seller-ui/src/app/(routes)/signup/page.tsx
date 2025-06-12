@@ -8,9 +8,10 @@ import useSignup from "@/hooks/signup/useSignup";
 import SignupForm from "./signupForm";
 import OtpVerification from "./otpVarification";
 import CreateShop from "./createShop";
+import ConnectBank from "./connectBank";
 
 const Page = () => {
-  const [activeStep, setActiveStep] = useState(2);
+  const [activeStep, setActiveStep] = useState(1);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showOtp, setShowOtp] = useState(false);
@@ -108,6 +109,9 @@ const Page = () => {
 
         {activeStep === 2 && (
           <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
+        )}
+        {activeStep === 3 && (
+          <ConnectBank sellerId={sellerId} setActiveStep={setActiveStep} />
         )}
       </div>
     </div>

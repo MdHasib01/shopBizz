@@ -1,6 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-05-28.basil",
+});
 import {
   checkOtpRestrictions,
   handleForgotPassword,
@@ -287,5 +292,127 @@ export const registerSeller = async (
     return res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
     return next(error);
+  }
+};
+
+//create stripe connect acccount link
+export const createstripeConnectLink = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { sellerId } = req.body;
+    if (!sellerId) {
+      throw new ValidationError("Seller Id is required!");
+    }
+    const seller = await prisma.sellers.findUnique({
+      where: { id: sellerId },
+    });
+    if (!seller) {
+      throw new ValidationError("Seller is not available with this id!");
+    }
+    const account = await stripe.accounts.create({
+      type: "express",
+      email: seller?.email,
+      country: "GB",
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+    });
+    await prisma.sellers.update({
+      where: { id: sellerId },
+      data: {
+        stripeId: account.id,
+      },
+    });
+
+    const acccountLink = await stripe.accountLinks.create({
+      account: account.id,
+      refresh_url: `http://localhost:3001/success`,
+      return_url: `http://localhost:3001/success`,
+      type: "account_onboarding",
+    });
+    res.json({ url: acccountLink.url });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//Login seller
+export const loginSeller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      throw new ValidationError("Email and password are required");
+    }
+
+    const seller = await prisma.sellers.findUnique({
+      where: { email },
+    });
+
+    if (!seller) {
+      throw new ValidationError("Invalid Credentials");
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, seller.password!);
+    if (!isPasswordMatch) {
+      throw new ValidationError("Invalid Password");
+    }
+
+    // Generate JWT token
+    const accessToken = jwt.sign(
+      {
+        id: seller.id,
+        email: seller.email,
+      },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        id: seller.id,
+        email: seller.email,
+      },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    setCookies(res, "seller-refresh-token", refreshToken);
+    setCookies(res, "seller-access-token", accessToken);
+
+    res.status(200).json({
+      message: "Login Successful!",
+      seller: { id: seller.id, email: seller.email, name: seller.name },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// get loggedin seller
+export const getSeller = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const seller = req.seller;
+    res.status(201).json({
+      success: true,
+      seller,
+    });
+  } catch (error) {
+    next(error);
   }
 };

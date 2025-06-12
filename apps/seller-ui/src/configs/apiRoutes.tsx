@@ -4,11 +4,12 @@ export const apiConfig = {
     signup: `/api/seller-registration`,
     verifyOtp: `/api/verify-seller`,
     createShop: `/api/create-shop`,
-    login: `/api/login`,
+    login: `/api/login-seller`,
     forgotPassword: `/api/forgot-password`,
     verifyForgotPasswordOtp: `/api/verify-forgot-password`,
     resetPassword: `/api/reset-password`,
     refreshToken: `/api/refresh-token-user`,
     getUser: `/api/loggedin-user`,
+    stripe: `/api/create-stripe-link`,
   },
 };

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   AudioWaveform,
   BookOpen,
@@ -12,24 +12,34 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-} from "lucide-react"
+  ListOrdered,
+  Wallet,
+  SquarePlus,
+  PackageOpen,
+  Calendar,
+  BellPlus,
+  BellRing,
+  Settings,
+  Mail,
+  Ticket,
+} from "lucide-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
+    name: "ShopBizz",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
@@ -50,7 +60,67 @@ const data = {
       plan: "Free",
     },
   ],
-  navMain: [
+  mainMenu: [
+    {
+      title: "Orders",
+      url: "/dashboard/orders",
+      icon: ListOrdered,
+    },
+    {
+      title: "Payments",
+      url: "/dashboard/payments",
+      icon: Wallet,
+    },
+  ],
+  products: [
+    {
+      title: "Create Product",
+      url: "dashboard/create-product",
+      icon: SquarePlus,
+    },
+    {
+      title: "All Products",
+      url: "dashboard/products",
+      icon: PackageOpen,
+    },
+  ],
+  events: [
+    {
+      title: "Create Event",
+      url: "dashboard/create-event",
+      icon: Calendar,
+    },
+    {
+      title: "All Events",
+      url: "dashboard/events",
+      icon: BellPlus,
+    },
+  ],
+  controllers: [
+    {
+      title: "Inbox",
+      url: "dashboard/inbox",
+      icon: Mail,
+    },
+    {
+      title: "Settings",
+      url: "dashboard/settings",
+      icon: Settings,
+    },
+    {
+      title: "Notifications",
+      url: "dashboard/notifications",
+      icon: BellRing,
+    },
+  ],
+  extras: [
+    {
+      title: "Discount Codes",
+      url: "dashboard/discount-codes",
+      icon: Ticket,
+    },
+  ],
+  Events: [
     {
       title: "Playground",
       url: "#",
@@ -154,7 +224,7 @@ const data = {
       icon: Map,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -163,7 +233,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={data.mainMenu} title={"Main Menu"} />
+        <NavMain items={data.products} title={"Products"} />
+        <NavMain items={data.events} title={"Events"} />
+        <NavMain items={data.controllers} title={"Controllers"} />
+        <NavMain items={data.extras} title={"Extras"} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
@@ -171,5 +245,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

@@ -279,7 +279,8 @@ export const refreshToken = async (
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
-    return res.status(200).json({ user });
+    const { password, ...userData } = user;
+    return res.status(200).json({ user: userData });
   } catch (err) {
     return next(err);
   }
@@ -431,9 +432,10 @@ export const getSeller = async (
 ) => {
   try {
     const seller = req.seller;
+    const { password, ...sellerData } = seller;
     res.status(201).json({
       success: true,
-      seller,
+      seller: sellerData,
     });
   } catch (error) {
     next(error);

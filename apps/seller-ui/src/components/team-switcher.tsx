@@ -53,7 +53,9 @@ export function TeamSwitcher({
                 <span className="truncate font-semibold">
                   {seller?.shop?.name}
                 </span>
-                <span className="truncate text-xs">{seller?.name}</span>
+                <span className="truncate text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[170px]">
+                  {seller?.shop?.address}
+                </span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>

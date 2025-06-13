@@ -22,7 +22,7 @@ const router: Router = express.Router();
 router.post("/register", userRegistration);
 router.post("/verify-otp", verifyUser);
 router.post("/login", login);
-router.post("/refresh-token-user", refreshToken);
+router.post("/refresh-token", refreshToken);
 router.get("/loggedin-user", isAuthenticated, getUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-forgot-password", verifyUserForgotPasswordOtp);

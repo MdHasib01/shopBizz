@@ -3,22 +3,22 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
 
 // fetch user data
-const fetchUser = async () => {
-  const response = await axiosInstance.get(apiConfig.routes.getUser);
-  return response.data.user;
+const fetchSeller = async () => {
+  const response = await axiosInstance.get(apiConfig.routes.getSeller);
+  return response.data.seller;
 };
 
-export const useUser = () => {
+export const useSeller = () => {
   const {
-    data: user,
+    data: seller,
     isLoading,
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["user"],
-    queryFn: fetchUser,
+    queryKey: ["seller"],
+    queryFn: fetchSeller,
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
-  return { user, isLoading, isError, refetch };
+  return { seller, isLoading, isError, refetch };
 };

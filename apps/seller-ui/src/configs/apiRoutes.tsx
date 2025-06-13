@@ -8,8 +8,8 @@ export const apiConfig = {
     forgotPassword: `/api/forgot-password`,
     verifyForgotPasswordOtp: `/api/verify-forgot-password`,
     resetPassword: `/api/reset-password`,
-    refreshToken: `/api/refresh-token-user`,
-    getUser: `/api/loggedin-user`,
+    refreshToken: `/api/refresh-token`,
+    getSeller: `/api/logged-in-seller`,
     stripe: `/api/create-stripe-link`,
   },
 };

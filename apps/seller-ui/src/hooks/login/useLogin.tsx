@@ -21,7 +21,7 @@ const useLogin = (
       return response.data;
     },
     onSuccess: (data) => {
-      router.push("/");
+      router.push("/dashboard");
       toast.success("Login successful");
     },
     onError: (error: AxiosError) => {

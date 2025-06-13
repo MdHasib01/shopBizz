@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
 let isRefreshing = false;
 let refreshSubscribers: (() => void)[] = [];
 
-const handleLogout = () => {
+export const handleLogout = () => {
   if (window.location.pathname !== "/login") window.location.href = "/login";
 };
 

@@ -36,7 +36,6 @@ export function NavMain({
   title: string;
 }) {
   const pathname = usePathname();
-  console.log("link", pathname);
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>

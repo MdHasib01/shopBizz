@@ -1,7 +1,8 @@
 import { ThemeProvider } from "@/app/ThemeProvider";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import React from "react";
+import { AppSidebar } from "../../../components/app-sidebar";
+
+import { SidebarInset, SidebarProvider } from "../../../components/ui/sidebar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -17,7 +18,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               enableSystem
               disableTransitionOnChange
             >
-              {children}
+              <SidebarInset>{children}</SidebarInset>
             </ThemeProvider>
           </SidebarProvider>
         </body>

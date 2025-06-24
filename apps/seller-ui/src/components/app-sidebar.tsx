@@ -75,12 +75,12 @@ const data = {
   products: [
     {
       title: "Create Product",
-      url: "dashboard/create-product",
+      url: "/dashboard/create-product",
       icon: SquarePlus,
     },
     {
       title: "All Products",
-      url: "dashboard/products",
+      url: "/dashboard/products",
       icon: PackageOpen,
     },
   ],

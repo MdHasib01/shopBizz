@@ -72,4 +72,8 @@ model sellers {
   updatedAt     DateTime  @updatedAt
 }
 
-// model 
+model site_config{
+  it String @id @default(auto()) @map("_id") @db.ObjectId
+  categories String[]
+  subCategories Json
+}

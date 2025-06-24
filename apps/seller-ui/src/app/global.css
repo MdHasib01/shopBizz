@@ -77,7 +77,9 @@
 .container {
   @apply w-[80%] px-4 m-auto;
 }
-
+.product-input-label {
+  @apply block text-gray-600 dark:text-gray-300 font-semibold mb-1;
+}
 @layer base {
   * {
     @apply border-border;

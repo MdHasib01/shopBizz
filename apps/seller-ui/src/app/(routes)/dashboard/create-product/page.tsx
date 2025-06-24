@@ -6,6 +6,9 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import Input from "../../../../../../../packages/components/input/input";
+import ColorSelector from "../../../../../../../packages/components/color-selector";
+import CustomSpecifications from "../../../../../../../packages/components/costom-specifications";
+import CustomProperties from "../../../../../../../packages/components/custom-properties";
 
 const page = () => {
   const {
@@ -114,39 +117,153 @@ const page = () => {
             <div className="w-full flex gap-6">
               {/* product title input  */}
               <div className="w-2/4">
-                <Input
-                  label="Product Title"
-                  placeholder="Enter product title"
-                  type="text"
-                  {...register("title", { required: "Title is required" })}
-                />
-                {errors.title && (
-                  <span className="text-red-500">
-                    {errors.title.message as string}
-                  </span>
-                )}
-                <Input
-                  label="Short Description * (Max 150 words)"
-                  placeholder="Enter product description for quick view"
-                  type="textarea"
-                  rows={7}
-                  cols={10}
-                  {...register("description", {
-                    required: "Description is required",
-                    validate: (value) => {
-                      const wordCount = value.trim().split(/\s+/).length;
-                      return (
-                        wordCount <= 150 ||
-                        "Description must be less than 150 words"
-                      );
-                    },
-                  })}
-                />
-                {errors.description && (
-                  <span className="text-red-500">
-                    {errors.description.message as string}
-                  </span>
-                )}
+                <div className="mt-2">
+                  <Input
+                    label="Product Title"
+                    placeholder="Enter product title"
+                    type="text"
+                    {...register("title", { required: "Title is required" })}
+                  />
+                  {errors.title && (
+                    <span className="text-red-500">
+                      {errors.title.message as string}
+                    </span>
+                  )}
+                </div>
+
+                <div className="t-2">
+                  <Input
+                    label="Short Description * (Max 150 words)"
+                    placeholder="Enter product description for quick view"
+                    type="textarea"
+                    rows={7}
+                    cols={10}
+                    {...register("description", {
+                      required: "Description is required",
+                      validate: (value) => {
+                        const wordCount = value.trim().split(/\s+/).length;
+                        return (
+                          wordCount <= 150 ||
+                          "Description must be less than 150 words"
+                        );
+                      },
+                    })}
+                  />
+                  {errors.description && (
+                    <span className="text-red-500">
+                      {errors.description.message as string}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2">
+                  <Input
+                    label="Tags *"
+                    type="text"
+                    placeholder="Apple, Flagship "
+                    {...register("tags", {
+                      required: "Seperate tags by commas",
+                    })}
+                  />
+                  {errors.tags && (
+                    <span className="text-red-500">
+                      {errors.tags.message as string}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2">
+                  <Input
+                    label="Warranty *"
+                    type="text"
+                    placeholder="1 Year / No Warranty"
+                    {...register("warranty", {
+                      required: "Seperate tags by commas",
+                    })}
+                  />
+                  {errors.warranty && (
+                    <span className="text-red-500">
+                      {errors.warranty.message as string}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2">
+                  <Input
+                    label="Slug *"
+                    type="text"
+                    placeholder="Slug"
+                    {...register("warranty", {
+                      required: "Slug is required!",
+                      pattern: {
+                        value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                        message:
+                          "Invalid slug format! Use only lowercase letters, numbers, and hyphens.",
+                      },
+                      minLength: {
+                        value: 3,
+                        message: "Slug must be at least 3 characters long.",
+                      },
+                      maxLength: {
+                        value: 50,
+                        message: "Slug cannot exceed 50 characters.",
+                      },
+                    })}
+                  />
+                  {errors.warranty && (
+                    <span className="text-red-500">
+                      {errors.warranty.message as string}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2">
+                  <Input
+                    label="Brand"
+                    type="text"
+                    placeholder="Apple"
+                    {...register("brand")}
+                  />
+                  {errors.brand && (
+                    <span className="text-red-500">
+                      {errors.brand.message as string}
+                    </span>
+                  )}
+                </div>
+                <ColorSelector control={control} errors={errors} />
+                <div className="mt-2">
+                  <CustomSpecifications control={control} errors={errors} />
+                </div>
+                <div className="mt-2">
+                  <CustomProperties control={control} errors={errors} />
+                </div>
+                <div className="mt-2">
+                  <label className="block text-gray-600 dark:text-gray-300 font-semibold mb-1">
+                    Cash On delivery *
+                  </label>
+                  <select
+                    {...register("cash_on_delivery", {
+                      required: "This field is required",
+                    })}
+                    defaultValue={"yes"}
+                    className="w-full border outline-none border-grey-700 bg-transparent rounded-md p-2 text-gray-300 "
+                  >
+                    <option value="yes" className="bg-black">
+                      Yes
+                    </option>
+                    <option value="no" className="bg-black">
+                      No
+                    </option>
+                  </select>
+                  {errors.cash_on_delivery && (
+                    <span className="text-red-500">
+                      {errors.cash_on_delivery.message as string}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="w-2/4">
+                <label className="product-input-label">Category *</label>
               </div>
             </div>
           </div>

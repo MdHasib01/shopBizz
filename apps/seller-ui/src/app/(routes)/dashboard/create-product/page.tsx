@@ -4,11 +4,23 @@ import ImagePlaceHolder from "@/components/ImagePlaceHolder";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import Input from "../../../../../../../packages/components/input/input";
 import ColorSelector from "../../../../../../../packages/components/color-selector";
 import CustomSpecifications from "../../../../../../../packages/components/costom-specifications";
 import CustomProperties from "../../../../../../../packages/components/custom-properties";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "@/utils/axiosInstance";
+import { cookies } from "next/headers";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const page = () => {
   const {
@@ -24,6 +36,29 @@ const page = () => {
   const [isChanged, setIsChanged] = useState(false);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      try {
+        const res = await axiosInstance.get("/product/api/get-categories");
+        return res.data;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+  });
+
+  const categories = data?.categories || [];
+  const subCategories = data?.subCategories || {};
+
+  const selectedCategory = watch("category");
+  const regularPrice = watch("regular_price");
+
+  console.log(categories, subCategories);
+
   const onSubmit = (data: any) => {
     console.log(data);
   };
@@ -264,6 +299,33 @@ const page = () => {
               </div>
               <div className="w-2/4">
                 <label className="product-input-label">Category *</label>
+                {isLoading ? (
+                  <p className="text-gray-500">loading categories...</p>
+                ) : isError ? (
+                  <p className="text-red-5000">Failed to load categories</p>
+                ) : (
+                  <Controller
+                    name="category"
+                    control={control}
+                    render={({ field }) => (
+                      <Select>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select a fruit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Fruits</SelectLabel>
+                            <SelectItem value="apple">Apple</SelectItem>
+                            <SelectItem value="banana">Banana</SelectItem>
+                            <SelectItem value="blueberry">Blueberry</SelectItem>
+                            <SelectItem value="grapes">Grapes</SelectItem>
+                            <SelectItem value="pineapple">Pineapple</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                )}
               </div>
             </div>
           </div>

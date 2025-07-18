@@ -24,7 +24,7 @@ const initilizeConfig = async () => {
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error initilizing site config:", error);
   }
 };
 

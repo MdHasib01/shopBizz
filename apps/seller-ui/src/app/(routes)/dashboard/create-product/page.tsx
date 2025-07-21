@@ -3,15 +3,14 @@ import Header from "@/components/header";
 import ImagePlaceHolder from "@/components/ImagePlaceHolder";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import Input from "../../../../../../../packages/components/input/input";
-import ColorSelector from "../../../../../../../packages/components/color-selector";
-import CustomSpecifications from "../../../../../../../packages/components/costom-specifications";
-import CustomProperties from "../../../../../../../packages/components/custom-properties";
+import Input from "../../../../components/input/input";
+import ColorSelector from "../../../../components/color-selector";
+import CustomSpecifications from "../../../../components/costom-specifications";
+import CustomProperties from "../../../../components/custom-properties";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/utils/axiosInstance";
-import { cookies } from "next/headers";
 import {
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import RichTextEditor from "@/components/rich-text-editor";
 
 const page = () => {
   const {
@@ -52,12 +52,14 @@ const page = () => {
   });
 
   const categories = data?.categories || [];
-  const subCategories = data?.subCategories || {};
+  const subCategory = data?.subCategories || {};
 
   const selectedCategory = watch("category");
   const regularPrice = watch("regular_price");
 
-  console.log(categories, subCategories);
+  const subCategories = useMemo(() => {
+    return selectedCategory ? subCategory[selectedCategory] : [];
+  }, [selectedCategory, subCategory]);
 
   const onSubmit = (data: any) => {
     console.log(data);
@@ -94,23 +96,18 @@ const page = () => {
     <>
       <Header pageTitle="Create Product" />
       <form
-        className="w-full mx-auto p-8 shadow-md rounded-lg text-white"
+        className="w-full mx-auto p-8 shadow-md rounded-lg text-foreground"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <h2 className="text-2xl py-2 font-semibold text-black dark:text-white">
+        <h2 className="text-2xl py-2 font-semibold text-foreground">
           Create Product
         </h2>
         <div className="flex items-center">
           <Link href="/dashboard">
-            <span className="text-blue-400 dark:text-[#80Deea] cursor-pointer">
-              Dashboard
-            </span>
+            <span className="text-primary cursor-pointer">Dashboard</span>
           </Link>
-          <ChevronRight
-            size={20}
-            className="opacity-[.8] text-black dark:text-white"
-          />
-          <span className="text-black dark:text-white">Create Product</span>
+          <ChevronRight size={20} className="opacity-[.8] text-foreground" />
+          <span className="text-foreground">Create Product</span>
         </div>
 
         {/* content layout */}
@@ -155,12 +152,13 @@ const page = () => {
                 <div className="mt-2">
                   <Input
                     label="Product Title"
+                    className="text-foreground"
                     placeholder="Enter product title"
                     type="text"
                     {...register("title", { required: "Title is required" })}
                   />
                   {errors.title && (
-                    <span className="text-red-500">
+                    <span className="text-destructive">
                       {errors.title.message as string}
                     </span>
                   )}
@@ -185,7 +183,7 @@ const page = () => {
                     })}
                   />
                   {errors.description && (
-                    <span className="text-red-500">
+                    <span className="text-destructive">
                       {errors.description.message as string}
                     </span>
                   )}
@@ -201,7 +199,7 @@ const page = () => {
                     })}
                   />
                   {errors.tags && (
-                    <span className="text-red-500">
+                    <span className="text-destructive">
                       {errors.tags.message as string}
                     </span>
                   )}
@@ -217,7 +215,7 @@ const page = () => {
                     })}
                   />
                   {errors.warranty && (
-                    <span className="text-red-500">
+                    <span className="text-destructive">
                       {errors.warranty.message as string}
                     </span>
                   )}
@@ -246,7 +244,7 @@ const page = () => {
                     })}
                   />
                   {errors.warranty && (
-                    <span className="text-red-500">
+                    <span className="text-destructive">
                       {errors.warranty.message as string}
                     </span>
                   )}
@@ -260,7 +258,7 @@ const page = () => {
                     {...register("brand")}
                   />
                   {errors.brand && (
-                    <span className="text-red-500">
+                    <span className="text-destructive">
                       {errors.brand.message as string}
                     </span>
                   )}
@@ -273,7 +271,7 @@ const page = () => {
                   <CustomProperties control={control} errors={errors} />
                 </div>
                 <div className="mt-2">
-                  <label className="block text-gray-600 dark:text-gray-300 font-semibold mb-1">
+                  <label className="block text-muted-foreground font-semibold mb-1">
                     Cash On delivery *
                   </label>
                   <select
@@ -281,51 +279,241 @@ const page = () => {
                       required: "This field is required",
                     })}
                     defaultValue={"yes"}
-                    className="w-full border outline-none border-grey-700 bg-transparent rounded-md p-2 text-gray-300 "
+                    className="w-full border outline-none border-border bg-background rounded-md p-2 text-muted-foreground"
                   >
-                    <option value="yes" className="bg-black">
+                    <option value="yes" className="bg-card">
                       Yes
                     </option>
-                    <option value="no" className="bg-black">
+                    <option value="no" className="bg-card">
                       No
                     </option>
                   </select>
                   {errors.cash_on_delivery && (
-                    <span className="text-red-500">
+                    <span className="text-destructive">
                       {errors.cash_on_delivery.message as string}
                     </span>
                   )}
                 </div>
               </div>
-              <div className="w-2/4">
+              <div className="w-2/4 ">
                 <label className="product-input-label">Category *</label>
                 {isLoading ? (
-                  <p className="text-gray-500">loading categories...</p>
+                  <p className="text-muted-foreground">loading categories...</p>
                 ) : isError ? (
-                  <p className="text-red-5000">Failed to load categories</p>
+                  <p className="text-destructive">Failed to load categories</p>
                 ) : (
                   <Controller
                     name="category"
                     control={control}
-                    render={({ field }) => (
-                      <Select>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select a fruit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Fruits</SelectLabel>
-                            <SelectItem value="apple">Apple</SelectItem>
-                            <SelectItem value="banana">Banana</SelectItem>
-                            <SelectItem value="blueberry">Blueberry</SelectItem>
-                            <SelectItem value="grapes">Grapes</SelectItem>
-                            <SelectItem value="pineapple">Pineapple</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    )}
+                    render={({ field }) => {
+                      console.log("Field object:", field);
+                      console.log("Current value:", field.value);
+
+                      return (
+                        <Select
+                          onValueChange={(val) => {
+                            console.log("Changing to:", val);
+                            field.onChange(val);
+                          }}
+                          value={field.value}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select a Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Categories</SelectLabel>
+                              {categories?.map((category: string) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      );
+                    }}
                   />
                 )}
+                {errors.category && (
+                  <span className="text-destructive">
+                    {errors.category.message as string}
+                  </span>
+                )}
+                <label className="product-input-label mt-4">
+                  Sub Categroies *
+                </label>
+                {isLoading ? (
+                  <p className="text-muted-foreground">
+                    loading sub categories...
+                  </p>
+                ) : isError ? (
+                  <p className="text-destructive">
+                    Failed to load sub categories
+                  </p>
+                ) : (
+                  <Controller
+                    name="subcategory"
+                    control={control}
+                    render={({ field }) => {
+                      console.log("Field object:", field);
+                      console.log("Current value:", field.value);
+
+                      return (
+                        <Select
+                          onValueChange={(val) => {
+                            console.log("Changing to:", val);
+                            field.onChange(val);
+                          }}
+                          value={field.value}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select a Sub Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Sub Categories</SelectLabel>
+                              {subCategories?.map((category: string) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      );
+                    }}
+                  />
+                )}
+                {errors.subcategory && (
+                  <span className="text-destructive">
+                    {errors.subcategory.message as string}
+                  </span>
+                )}
+                <div className="mt-4">
+                  <label className="block font-semibold text-muted-foreground mb-1">
+                    Description *
+                  </label>
+                  <Controller
+                    name="detailed_description"
+                    control={control}
+                    rules={{
+                      required: "Description is required",
+                      validate: (value) => {
+                        const wordCount = value.trim().split(/\s+/).length;
+                        return (
+                          wordCount <= 100 ||
+                          "Description must be less than 100 words"
+                        );
+                      },
+                    }}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Enter product description here..."
+                      />
+                    )}
+                  />
+                  {errors.detailed_description && (
+                    <span className="text-destructive">
+                      {errors.detailed_description.message as string}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <Input
+                    label="Viduo Url"
+                    type="text"
+                    placeholder="https://www.youtube.com/embaded/xyz123"
+                    {...register("video_url", {
+                      pattern: {
+                        value:
+                          /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/,
+                        message:
+                          "Invalid url format!, use format like https://www.youtube.com/embaded/xyz123",
+                      },
+                    })}
+                  />
+                  {errors.video_url && (
+                    <span className="text-destructive">
+                      {errors.video_url.message as string}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2">
+                  <Input
+                    label="Regular Price"
+                    type="text"
+                    placeholder="20$"
+                    {...register("regular_price", {
+                      valueAsNumber: true,
+                      min: { value: 1, message: "Price must be at least 1" },
+                      validate: (value) =>
+                        !isNaN(value) || "Only numbers are allowed",
+                    })}
+                  />
+                  {errors.regular_price && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.regular_price.message as string}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <Input
+                    label="Sale Price *"
+                    placeholder="15$"
+                    type="text"
+                    {...register("sale_price", {
+                      required: "Sale Price is required",
+                      valueAsNumber: true,
+                      min: {
+                        value: 1,
+                        message: "Sale Price must be at least 1",
+                      },
+                      validate: (value) => {
+                        if (isNaN(value)) return "Only numbers are allowed";
+                        if (regularPrice && value >= regularPrice) {
+                          return "Sale Price must be less than Regular Price";
+                        }
+                        return true;
+                      },
+                    })}
+                  />
+                  {errors.sale_price && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.sale_price.message as string}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <Input
+                    label="Stock *"
+                    placeholder="100"
+                    type="text"
+                    {...register("stock", {
+                      required: "Stock is required!",
+                      valueAsNumber: true,
+                      min: { value: 1, message: "Stock must be at least 1" },
+                      max: {
+                        value: 1000,
+                        message: "Stock cannot exceed 1,000",
+                      },
+                      validate: (value) => {
+                        if (isNaN(value)) return "Only numbers are allowed!";
+                        if (!Number.isInteger(value))
+                          return "Stock must be a whole number!";
+                        return true;
+                      },
+                    })}
+                  />
+                  {errors.stock && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.stock.message as string}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

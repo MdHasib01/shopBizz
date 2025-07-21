@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Controller } from "react-hook-form";
 import Input from "../input/input";
 import { LuPlus, LuX } from "react-icons/lu";
+import { toast } from "sonner";
 const CustomProperties = ({ control, errors }: any) => {
   const [properties, setProperties] = React.useState<
     { label: string; values: string[] }[]
@@ -22,7 +23,10 @@ const CustomProperties = ({ control, errors }: any) => {
             }, [properties]);
 
             const addProperty = () => {
-              if (!newLabel.trim()) return;
+              if (!newLabel.trim()) {
+                toast.error("Please enter a label.");
+                return;
+              }
               setProperties([...properties, { label: newLabel, values: [] }]);
               setNewLabel("");
             };
@@ -40,17 +44,17 @@ const CustomProperties = ({ control, errors }: any) => {
 
             return (
               <div className="mt-2">
-                <label className="block font-semibold text-gray-300 mb-1">
+                <label className="block font-semibold text-muted-foreground mb-1">
                   Custom Properties
                 </label>
                 <div className="flex flex-col gap-2">
                   {properties.map((property, index) => (
                     <div
                       key={index}
-                      className="border broder-gray-700 p-3 rounded-lg bg-gray-900"
+                      className="border border-border p-3 rounded-lg bg-secondary"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-white font-medium">
+                        <span className="text-card-foreground font-medium">
                           {property.label}
                         </span>
                         {
@@ -58,7 +62,7 @@ const CustomProperties = ({ control, errors }: any) => {
                             type="button"
                             onClick={() => removeProperty(index)}
                           >
-                            <LuX className="h-4 w-4 text-red-500" />
+                            <LuX className="h-4 w-4 text-destructive" />
                           </button>
                         }
                       </div>
@@ -68,7 +72,7 @@ const CustomProperties = ({ control, errors }: any) => {
                         <input
                           type="text"
                           placeholder="Enter value..."
-                          className="border outline-none border-gray-700 bg-gray-800 p-2 rounded-md text-white w-full"
+                          className="border outline-none border-border bg-background p-2 rounded-md text-foreground w-full"
                           value={newValue}
                           onChange={(e) => setNewValue(e.target.value)}
                         />
@@ -76,7 +80,7 @@ const CustomProperties = ({ control, errors }: any) => {
                         <button
                           type="button"
                           onClick={() => addValue(index)}
-                          className="px-3 py-2 bg-blue-500 text-white rounded-md"
+                          className="px-3 py-2 bg-primary text-primary-foreground rounded-md"
                         >
                           Add
                         </button>
@@ -87,7 +91,7 @@ const CustomProperties = ({ control, errors }: any) => {
                         {property.values.map((value, valueIndex) => (
                           <span
                             key={valueIndex}
-                            className="px-2 py-1 m-2 bg-gray-700 text-white rounded-md"
+                            className="px-2 py-1 m-2 bg-primary text-muted-foreground rounded-md"
                           >
                             {value}
                           </span>
@@ -106,14 +110,14 @@ const CustomProperties = ({ control, errors }: any) => {
                     <button
                       type="button"
                       onClick={addProperty}
-                      className="px-3 py-2 bg-blue-500 text-white rounded-md flex"
+                      className="px-3 py-2 bg-primary text-primary-foreground rounded-md flex"
                     >
                       <LuPlus className="h-6 w-6" /> Add
                     </button>
                   </div>
                 </div>
                 {errors.customProperties && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-destructive text-sm mt-1">
                     {errors.customProperties.message as string}
                   </p>
                 )}

@@ -22,6 +22,7 @@ const ImagePlaceHolder = ({
   const [imagePreview, setImagePreview] = React.useState<string | null>(
     defaultImage
   );
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -31,11 +32,17 @@ const ImagePlaceHolder = ({
       }
     }
   };
+
   return (
     <div
       className={`relative ${
         small ? "h-[180px]" : "h-[450px]"
-      } w-full cursor-pointer bg-gray-200 dark:bg-[#1e1e1e] border-gray-600 rounded-lg flex flex-col justify-center items-center `}
+      } w-full cursor-pointer rounded-lg flex flex-col justify-center items-center`}
+      style={{
+        backgroundColor: "var(--muted)",
+        borderColor: "var(--border)",
+        border: "1px solid",
+      }}
     >
       <input
         type="file"
@@ -44,12 +51,17 @@ const ImagePlaceHolder = ({
         id={`image-upload-${index}`}
         onChange={handleFileChange}
       />
+
       {imagePreview ? (
         <>
           <button
             type="button"
             onClick={() => onRemove?.(index!)}
-            className="absolute top-3 right-3 p-2 !rounded bg-red-600 shadow-lg"
+            className="absolute top-3 right-3 p-2 !rounded shadow-lg"
+            style={{
+              backgroundColor: "var(--destructive)",
+              color: "var(--destructive-foreground)",
+            }}
           >
             <X size={16} />
           </button>
@@ -58,15 +70,23 @@ const ImagePlaceHolder = ({
             onClick={() => {
               setOpenImageModal?.(true);
             }}
-            className="absolute top-3 right-[70px] p-2 !rounded bg-blue-600 shadow-lg cursor-pointer"
+            className="absolute top-3 right-[70px] p-2 !rounded shadow-lg cursor-pointer"
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "var(--primary-foreground)",
+            }}
           >
             <WandSparkles size={16} />
           </button>
         </>
       ) : (
         <label
-          className="absolute top-3 right-3 p-2 !rounded bg-slate-600 dark:bg-slate-700 shadow-lg cursor-pointer"
+          className="absolute top-3 right-3 p-2 !rounded shadow-lg cursor-pointer"
           htmlFor={`image-upload-${index}`}
+          style={{
+            backgroundColor: "var(--accent)",
+            color: "var(--accent-foreground)",
+          }}
         >
           <PencilIcon size={16} />
         </label>
@@ -83,16 +103,16 @@ const ImagePlaceHolder = ({
       ) : (
         <>
           <p
-            className={`text-gray-400 font-semibold ${
-              small ? "text-xl" : "text-3xl"
-            }`}
+            className={`font-semibold ${small ? "text-xl" : "text-3xl"}`}
+            style={{ color: "var(--muted-foreground)" }}
           >
             {size}
           </p>
           <p
-            className={`text-gray-500 font-semibold ${
+            className={`font-semibold ${
               small ? "text-sm" : "text-lg"
             } pt-2 text-center`}
+            style={{ color: "var(--muted-foreground)", opacity: 0.8 }}
           >
             please choose an image <br /> according to the expected ratio
           </p>

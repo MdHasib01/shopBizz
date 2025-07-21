@@ -11,7 +11,7 @@ const CustomSpecifications = ({ control, errors }: any) => {
   });
   return (
     <div>
-      <label className="block font-semibold text-gray-300 mb-1">
+      <label className="block font-semibold text-muted-foreground mb-1">
         Custom Specifications
       </label>
       <div className="flex flex-col gap-3">
@@ -55,7 +55,7 @@ const CustomSpecifications = ({ control, errors }: any) => {
         <button
           type="button"
           onClick={() => append({ name: "", value: "" })}
-          className="flex items-center gap-2 text-blue-500"
+          className="flex items-center gap-2 text-primary"
         >
           <CiCirclePlus className="w-6 h-6" /> Add Specifications
         </button>

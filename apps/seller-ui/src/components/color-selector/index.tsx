@@ -42,7 +42,9 @@ const ColorSelector = ({ control, errors }: any) => {
                     )
                   }
                   className={`w-7 h-7 p-2 rounded-md my-1 flex items-center justify-center border-2 transation ${
-                    isSelected ? "scale-110 border-white" : "border-transparent"
+                    isSelected
+                      ? "scale-110 border-border"
+                      : "border-transparent"
                   } ${isLightColor ? "border-gray-600" : ""}`}
                   style={{ backgroundColor: color }}
                 />

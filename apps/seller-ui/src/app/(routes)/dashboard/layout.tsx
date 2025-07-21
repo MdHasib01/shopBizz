@@ -1,4 +1,3 @@
-import { ThemeProvider } from "@/app/ThemeProvider";
 import React from "react";
 import { AppSidebar } from "../../../components/app-sidebar";
 
@@ -12,14 +11,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <body>
           <SidebarProvider>
             <AppSidebar />
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <SidebarInset>{children}</SidebarInset>
-            </ThemeProvider>
+
+            <SidebarInset>{children}</SidebarInset>
           </SidebarProvider>
         </body>
       </html>

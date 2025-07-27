@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import RichTextEditor from "@/components/rich-text-editor";
+import SizeSelector from "@/components/size-selector";
 
 const page = () => {
   const {
@@ -513,6 +514,10 @@ const page = () => {
                       {errors.stock.message as string}
                     </p>
                   )}
+                </div>
+
+                <div className="mt-2">
+                  <SizeSelector control={control} errors={errors} />
                 </div>
               </div>
             </div>

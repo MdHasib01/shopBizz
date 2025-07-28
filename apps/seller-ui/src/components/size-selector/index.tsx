@@ -31,7 +31,7 @@ const SizeSelector = ({ control, errors }: any) => {
                   className={`px-3 py-1 rounded-lg transition-colors ${
                     isSelected
                       ? "bg-primary text-primary-foreground border border-border"
-                      : "bg-muted text-primary-foreground"
+                      : "bg-muted text-primary-foreground border"
                   }`}
                 >
                   {size}

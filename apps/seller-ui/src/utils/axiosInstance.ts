@@ -10,7 +10,7 @@ let isRefreshing = false;
 let refreshSubscribers: (() => void)[] = [];
 
 export const handleLogout = () => {
-  if (window.location.pathname !== "/login") window.location.href = "/login";
+  // if (window.location.pathname !== "/login") window.location.href = "/login";
 };
 
 const subscriberTokenRefresh = (callback: () => void) => {

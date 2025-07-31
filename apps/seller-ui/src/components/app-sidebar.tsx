@@ -87,36 +87,36 @@ const data = {
   events: [
     {
       title: "Create Event",
-      url: "dashboard/create-event",
+      url: "/dashboard/create-event",
       icon: Calendar,
     },
     {
       title: "All Events",
-      url: "dashboard/events",
+      url: "/dashboard/events",
       icon: BellPlus,
     },
   ],
   controllers: [
     {
       title: "Inbox",
-      url: "dashboard/inbox",
+      url: "/dashboard/inbox",
       icon: Mail,
     },
     {
       title: "Settings",
-      url: "dashboard/settings",
+      url: "/dashboard/settings",
       icon: Settings,
     },
     {
       title: "Notifications",
-      url: "dashboard/notifications",
+      url: "/dashboard/notifications",
       icon: BellRing,
     },
   ],
   extras: [
     {
       title: "Discount Codes",
-      url: "dashboard/discount-codes",
+      url: "/dashboard/discount-codes",
       icon: Ticket,
     },
   ],

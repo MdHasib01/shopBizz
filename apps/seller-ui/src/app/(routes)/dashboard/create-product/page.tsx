@@ -34,7 +34,7 @@ const page = () => {
   } = useForm();
 
   const [openImageModal, setOpenImageModal] = useState(false);
-  const [isChanged, setIsChanged] = useState(false);
+  const [isChanged, setIsChanged] = useState(true);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
 
@@ -93,6 +93,8 @@ const page = () => {
     });
     setValue("images", images);
   };
+
+  const handleSaveDraft = () => {};
   return (
     <>
       <Header pageTitle="Create Product" />
@@ -522,6 +524,23 @@ const page = () => {
               </div>
             </div>
           </div>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          {isChanged && (
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 duration-300"
+            >
+              Save Draft
+            </button>
+          )}
+          <button
+            type="submit"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 duration-300"
+          >
+            {isLoading ? "Creating..." : "Create Product"}
+          </button>
         </div>
       </form>
     </>

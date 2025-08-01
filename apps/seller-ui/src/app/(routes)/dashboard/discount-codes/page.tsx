@@ -25,9 +25,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Page = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDiscount, setSelectedDiscount] = useState(null);
+
   const queryClient = useQueryClient();
   const { data: discountCodes = [], isLoading } = useQuery({
     queryKey: ["shop-discounts"],
@@ -67,7 +80,10 @@ const Page = () => {
     },
   });
 
-  const handleDeleteClick = async (discount: any) => {};
+  const handleDeleteClick = async (discount: any) => {
+    setShowDeleteModal(true);
+    setSelectedDiscount(discount);
+  };
 
   const formSubmit = (data: any) => {
     console.log("SUBMIT!", data);
@@ -148,7 +164,23 @@ const Page = () => {
               </tbody>
             </table>
           )}
-
+          <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure to delete this discount code?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           {!isLoading && discountCodes.length === 0 && (
             <p className="text-muted text-center mt-6 w-full justify-center gap-2 flex items-center">
               <Inbox size={18} />

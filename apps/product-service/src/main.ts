@@ -13,6 +13,8 @@ app.use(
       "http://localhost:3000",
       "http://localhost:3001",
       "http://localhost:3002",
+      "http://192.168.2.102:3000",
+      "http://192.168.2.102:3001",
     ],
     allowedHeaders: ["Authorization", "Content-Type"],
     credentials: true,

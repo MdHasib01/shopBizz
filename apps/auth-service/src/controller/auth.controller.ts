@@ -225,6 +225,7 @@ export const refreshToken = async (
       req.cookies["seller-refresh-token"] ||
       req.headers.authorization?.split(" ")[1];
 
+    console.log(refreshToken);
     if (!refreshToken) {
       throw new BadRequestError("Missing refresh token");
     }

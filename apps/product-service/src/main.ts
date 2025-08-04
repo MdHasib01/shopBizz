@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "../../../packages/errorHandler/errorMiddleware";
-import router from "./routes/product.routes";
+import productRouter from "./routes/product.routes";
+import productImageRouter from "./routes/productImage.routes";
 // import swaggerUi from "swagger-ui-express";
 // const swaggerDocument = require("./swagger.json");
 
@@ -30,7 +31,8 @@ app.get("/", (req, res) => {
 // app.get("/docs-json", (req, res) => res.json(swaggerDocument));
 
 //Routes
-app.use("/api", router);
+app.use("/api", productRouter);
+app.use("/api", productImageRouter);
 
 app.use(errorMiddleware);
 

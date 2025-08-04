@@ -72,33 +72,55 @@ const page = () => {
   const onSubmit = (data: any) => {
     console.log(data);
   };
-  const handleImageChange = (file: File | null, index: number) => {
-    const updatedImages = [...images];
-    updatedImages[index] = file;
+  const convertFileToBase64 = async (file: File) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+  const handleImageChange = async (file: File | null, index: number) => {
+    if (!file) return;
 
-    if (index === images.length - 1 && images.length < 8) {
-      updatedImages.push(null);
+    try {
+      const fileName = await convertFileToBase64(file);
+      const response = await axiosInstance.post(
+        "/product/api/upload-product-image",
+        {
+          fileName,
+        }
+      );
+      const updatedImages = [...images];
+      updatedImages[index] = response.data.file_url;
+
+      if (index === images.length - 1 && images.length < 8) {
+        updatedImages.push(null);
+      }
+      setImages(updatedImages);
+
+      setValue(`images`, updatedImages);
+    } catch (error) {
+      console.log(error);
     }
-    setImages(updatedImages);
-
-    setValue(`images`, updatedImages);
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => {
-      let updatedImages = [...prevImages];
-
-      if (index === -1) {
-        updatedImages[0] = null;
-      } else {
-        updatedImages.splice(index, 1);
+  const handleRemoveImage = async (index: number) => {
+    try {
+      const updatedImages = [...images];
+      const imageToDelete = updatedImages[index];
+      if (imageToDelete && typeof imageToDelete === "string") {
       }
+      updatedImages.splice(index, 1);
+
       if (!updatedImages.includes(null) && updatedImages.length < 8) {
         updatedImages.push(null);
       }
-      return updatedImages;
-    });
-    setValue("images", images);
+      setImages(updatedImages);
+      setValue(`images`, updatedImages);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleSaveDraft = () => {};

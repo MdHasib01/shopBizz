@@ -4,7 +4,7 @@ import {
   deleteDiscountCode,
   getCategories,
   getDiscountCodes,
-} from "../controllers/product.controllers";
+} from "../controllers/product.controller";
 const router: Router = express.Router();
 import isAuthenticated from "../middleware/isAuthenticated";
 

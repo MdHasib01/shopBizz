@@ -39,7 +39,7 @@ import {
 const Page = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedDiscount, setSelectedDiscount] = useState(null);
+  const [selectedDiscount, setSelectedDiscount] = useState<any>();
 
   const queryClient = useQueryClient();
   const { data: discountCodes = [], isLoading } = useQuery({
@@ -80,6 +80,18 @@ const Page = () => {
     },
   });
 
+  const deleteDiscountMutation = useMutation({
+    mutationFn: async (id: any) => {
+      const res = await axiosInstance.delete(
+        `/product/api/delete-discount-code/${id}`
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-discounts"] });
+      setShowDeleteModal(false);
+    },
+  });
   const handleDeleteClick = async (discount: any) => {
     setShowDeleteModal(true);
     setSelectedDiscount(discount);
@@ -164,6 +176,12 @@ const Page = () => {
               </tbody>
             </table>
           )}
+          {!isLoading && discountCodes.length === 0 && (
+            <p className="text-muted text-center mt-6 w-full justify-center gap-2 flex items-center">
+              <Inbox size={18} />
+              No discount codes found
+            </p>
+          )}
           <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -177,16 +195,17 @@ const Page = () => {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Delete</AlertDialogAction>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground"
+                  onClick={() =>
+                    deleteDiscountMutation.mutate(selectedDiscount?.id)
+                  }
+                >
+                  Delete
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          {!isLoading && discountCodes.length === 0 && (
-            <p className="text-muted text-center mt-6 w-full justify-center gap-2 flex items-center">
-              <Inbox size={18} />
-              No discount codes found
-            </p>
-          )}
         </div>
 
         <Dialog open={showModal} onOpenChange={setShowModal}>

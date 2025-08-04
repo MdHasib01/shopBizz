@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "../../../packages/errorHandler/errorMiddleware";
 import router from "./routes/auth.router";
+import prisma from "../../../packages/libs/prisma";
 // import swaggerUi from "swagger-ui-express";
 // import swaggerDocument from "./swagger.json";
 
@@ -36,8 +37,20 @@ app.use(errorMiddleware);
 
 const port = process.env.PORT ?? 6001;
 
-const server = app.listen(port, () => {
-  console.log(`Auth Service is Listening at http://localhost:${port}`);
-  console.log(`Swagger Docs at http://localhost:${port}/api-docs`);
-});
-server.on("error", console.error);
+const startServer = async () => {
+  try {
+    await prisma.$connect();
+    console.log("Database connected");
+
+    const server = app.listen(port, () => {
+      console.log(`Auth Service is Listening at http://localhost:${port}`);
+      console.log(`Swagger Docs at http://localhost:${port}/api-docs`);
+    });
+    server.on("error", console.error);
+  } catch (error) {
+    console.log("Database connection failed");
+    process.exit(1);
+  }
+};
+
+startServer();

@@ -1,5 +1,5 @@
 export const apiConfig = {
-  baseUrl: "http://192.168.2.102:8080",
+  baseUrl: "http://localhost:8080",
   routes: {
     signup: `/api/seller-registration`,
     verifyOtp: `/api/verify-seller`,

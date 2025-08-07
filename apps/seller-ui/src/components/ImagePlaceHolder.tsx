@@ -4,20 +4,26 @@ import React from "react";
 
 const ImagePlaceHolder = ({
   size,
+  images,
   small,
+  pictureUploadingLoader,
   onImageChange,
   onRemove,
   setOpenImageModal,
+  setSelectedImage,
   defaultImage = null,
   index = null,
 }: {
   size: string;
+  images: any;
   small?: boolean;
+  pictureUploadingLoader?: boolean;
   onImageChange?: (file: File | null, index: number) => void;
   onRemove?: (index: number) => void;
   defaultImage?: string | null;
   index?: any;
   setOpenImageModal?: (openImageModal: boolean) => void;
+  setSelectedImage?: (selectedImage: string) => void;
 }) => {
   const [imagePreview, setImagePreview] = React.useState<string | null>(
     defaultImage
@@ -56,6 +62,7 @@ const ImagePlaceHolder = ({
         <>
           <button
             type="button"
+            disabled={pictureUploadingLoader}
             onClick={() => onRemove?.(index!)}
             className="absolute top-3 right-3 p-2 !rounded shadow-lg"
             style={{
@@ -67,8 +74,10 @@ const ImagePlaceHolder = ({
           </button>
           <button
             type="button"
+            disabled={pictureUploadingLoader}
             onClick={() => {
               setOpenImageModal?.(true);
+              setSelectedImage?.(images[index].file_url);
             }}
             className="absolute top-3 right-[70px] p-2 !rounded shadow-lg cursor-pointer"
             style={{

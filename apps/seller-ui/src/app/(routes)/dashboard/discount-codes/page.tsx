@@ -143,7 +143,7 @@ const Page = () => {
                   <th className="p-3 text-left">Type</th>
                   <th className="p-3 text-left">Value</th>
                   <th className="p-3 text-left">Code</th>
-                  <th className="p-3 text-left">Actions</th>
+                  <th className="p-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +152,7 @@ const Page = () => {
                     // Added missing return statement
                     <tr
                       key={discount._id}
-                      className="border-b border-border hover:bg-background transition"
+                      className="border-b border-border hover:bg-primary/5 transition"
                     >
                       <td className="p-3">{discount.public_name}</td>
                       <td className="p-3 capitalize">
@@ -162,10 +162,10 @@ const Page = () => {
                       </td>
                       <td className="p-3">{discount.discountValue}</td>
                       <td className="p-3">{discount.discountCode}</td>
-                      <td className="p-3">
+                      <td className="p-3 text-center">
                         <button
                           onClick={() => handleDeleteClick(discount)}
-                          className="text-destructive hover:text-destructive/80 transition"
+                          className="text-destructive hover:text-destructive/80 transition cursor-pointer "
                         >
                           <Trash size={18} />
                         </button>

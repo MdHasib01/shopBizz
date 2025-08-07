@@ -17,7 +17,24 @@ export const uploadProductImage = async (
 
     return res
       .status(200)
-      .json({ file_url: response.url, fileName: response.fileId });
+      .json({ file_url: response.url, fileId: response.fileId });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//Delete Product Image
+export const deleteProductImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { fileId } = req.body;
+    const response = await imagekit.deleteFile(fileId);
+    return res
+      .status(200)
+      .json({ success: true, response, message: "Image deleted successfully" });
   } catch (error) {
     next(error);
   }

@@ -1,7 +1,7 @@
 "use client";
 import Header from "@/components/header";
 import ImagePlaceHolder from "@/components/ImagePlaceHolder";
-import { ChevronRight, Loader } from "lucide-react";
+import { ChevronRight, Loader, X } from "lucide-react";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -22,6 +22,23 @@ import {
 } from "@/components/ui/select";
 import RichTextEditor from "@/components/rich-text-editor";
 import SizeSelector from "@/components/size-selector";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+
+interface UploadedImage {
+  fileId: string;
+  file_url: string;
+}
 
 const page = () => {
   const {
@@ -35,9 +52,10 @@ const page = () => {
 
   const [openImageModal, setOpenImageModal] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
-  const [images, setImages] = useState<(File | null)[]>([null]);
+  const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
   const [loading, setLoading] = useState(false);
-
+  const [pictureUploadingLoader, setPictureUploadingLoader] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -84,6 +102,7 @@ const page = () => {
     if (!file) return;
 
     try {
+      setPictureUploadingLoader(true);
       const fileName = await convertFileToBase64(file);
       const response = await axiosInstance.post(
         "/product/api/upload-product-image",
@@ -92,7 +111,11 @@ const page = () => {
         }
       );
       const updatedImages = [...images];
-      updatedImages[index] = response.data.file_url;
+      const uploadedImage = {
+        file_url: response.data.file_url,
+        fileId: response.data.fileId,
+      };
+      updatedImages[index] = uploadedImage;
 
       if (index === images.length - 1 && images.length < 8) {
         updatedImages.push(null);
@@ -102,6 +125,8 @@ const page = () => {
       setValue(`images`, updatedImages);
     } catch (error) {
       console.log(error);
+    } finally {
+      setPictureUploadingLoader(false);
     }
   };
 
@@ -109,7 +134,12 @@ const page = () => {
     try {
       const updatedImages = [...images];
       const imageToDelete = updatedImages[index];
-      if (imageToDelete && typeof imageToDelete === "string") {
+      if (imageToDelete && typeof imageToDelete === "object") {
+        await axiosInstance.delete(`/product/api/delete-product-image`, {
+          data: {
+            fileId: imageToDelete.fileId!,
+          },
+        });
       }
       updatedImages.splice(index, 1);
 
@@ -149,10 +179,13 @@ const page = () => {
             {images?.length > 0 && (
               <ImagePlaceHolder
                 size="765 x 850"
+                images={images}
                 small={false}
+                pictureUploadingLoader={pictureUploadingLoader}
                 onImageChange={handleImageChange}
                 onRemove={handleRemoveImage}
                 setOpenImageModal={setOpenImageModal}
+                setSelectedImage={setSelectedImage}
                 defaultImage={null}
                 index={0}
               />
@@ -163,16 +196,20 @@ const page = () => {
                 return (
                   <ImagePlaceHolder
                     size="765 x 850"
+                    images={images}
                     small={true}
+                    pictureUploadingLoader={pictureUploadingLoader}
                     onImageChange={handleImageChange}
                     onRemove={handleRemoveImage}
                     setOpenImageModal={setOpenImageModal}
+                    setSelectedImage={setSelectedImage}
                     defaultImage={null}
                     index={index + 1}
                     key={index}
                   />
                 );
               })}
+              {pictureUploadingLoader && <Loader className="animate-spin" />}
             </div>
           </div>
 
@@ -592,6 +629,31 @@ const page = () => {
             </div>
           </div>
         </div>
+
+        {
+          <AlertDialog open={openImageModal} onOpenChange={setOpenImageModal}>
+            <AlertDialogContent>
+              <div>
+                <div className="flex justify-between items-center">
+                  <h1>Enhance Product Imagge</h1>
+                  <Button onClick={() => setOpenImageModal(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="flex justify-center items-center max-w-[250px] mx-auto my-4">
+                  <Image
+                    src={selectedImage}
+                    alt="image"
+                    height={400}
+                    width={400}
+                    objectFit="contain"
+                  />
+                </div>
+              </div>
+            </AlertDialogContent>
+          </AlertDialog>
+        }
         <div className="mt-6 flex justify-end gap-3">
           {isChanged && (
             <button

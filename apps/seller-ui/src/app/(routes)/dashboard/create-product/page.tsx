@@ -55,6 +55,7 @@ const page = () => {
   const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
   const [loading, setLoading] = useState(false);
   const [pictureUploadingLoader, setPictureUploadingLoader] = useState(false);
+  const [pictureDeleteingLoader, setPictureDeleteingLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
@@ -132,6 +133,7 @@ const page = () => {
 
   const handleRemoveImage = async (index: number) => {
     try {
+      setPictureDeleteingLoader(true);
       const updatedImages = [...images];
       const imageToDelete = updatedImages[index];
       if (imageToDelete && typeof imageToDelete === "object") {
@@ -150,6 +152,8 @@ const page = () => {
       setValue(`images`, updatedImages);
     } catch (error) {
       console.log(error);
+    } finally {
+      setPictureDeleteingLoader(false);
     }
   };
 
@@ -182,6 +186,7 @@ const page = () => {
                 images={images}
                 small={false}
                 pictureUploadingLoader={pictureUploadingLoader}
+                pictureDeleteingLoader={pictureDeleteingLoader}
                 onImageChange={handleImageChange}
                 onRemove={handleRemoveImage}
                 setOpenImageModal={setOpenImageModal}
@@ -199,6 +204,7 @@ const page = () => {
                     images={images}
                     small={true}
                     pictureUploadingLoader={pictureUploadingLoader}
+                    pictureDeleteingLoader={pictureDeleteingLoader}
                     onImageChange={handleImageChange}
                     onRemove={handleRemoveImage}
                     setOpenImageModal={setOpenImageModal}

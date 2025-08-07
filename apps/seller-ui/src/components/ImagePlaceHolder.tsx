@@ -1,4 +1,4 @@
-import { PencilIcon, WandSparkles, X } from "lucide-react";
+import { Loader, PencilIcon, WandSparkles, X } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
@@ -7,6 +7,7 @@ const ImagePlaceHolder = ({
   images,
   small,
   pictureUploadingLoader,
+  pictureDeleteingLoader,
   onImageChange,
   onRemove,
   setOpenImageModal,
@@ -18,6 +19,7 @@ const ImagePlaceHolder = ({
   images: any;
   small?: boolean;
   pictureUploadingLoader?: boolean;
+  pictureDeleteingLoader?: boolean;
   onImageChange?: (file: File | null, index: number) => void;
   onRemove?: (index: number) => void;
   defaultImage?: string | null;
@@ -62,15 +64,19 @@ const ImagePlaceHolder = ({
         <>
           <button
             type="button"
-            disabled={pictureUploadingLoader}
+            disabled={pictureDeleteingLoader}
             onClick={() => onRemove?.(index!)}
-            className="absolute top-3 right-3 p-2 !rounded shadow-lg"
+            className="absolute top-3 right-3 p-2 !rounded shadow-lg disabled:cursor-default disabled:bg-muted! cursor-pointer"
             style={{
               backgroundColor: "var(--destructive)",
               color: "var(--destructive-foreground)",
             }}
           >
-            <X size={16} />
+            {pictureDeleteingLoader ? (
+              <Loader size={14} className="animate-spin" />
+            ) : (
+              <X size={16} />
+            )}
           </button>
           <button
             type="button"
@@ -79,7 +85,7 @@ const ImagePlaceHolder = ({
               setOpenImageModal?.(true);
               setSelectedImage?.(images[index].file_url);
             }}
-            className="absolute top-3 right-[70px] p-2 !rounded shadow-lg cursor-pointer"
+            className="absolute top-3 right-[70px] p-2 !rounded disabled:bg-muted! disabled:cursor-default shadow-lg cursor-pointer"
             style={{
               backgroundColor: "var(--primary)",
               color: "var(--primary-foreground)",

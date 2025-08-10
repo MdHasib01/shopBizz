@@ -3,6 +3,7 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../../../../packages/libs/prisma";
 import { ValidationError } from "../../../../packages/errorHandler";
+import { Prisma } from "@prisma/client";
 
 export const getCategories = async (
   req: Request,
@@ -177,7 +178,7 @@ export const createProduct = async (
       },
     });
 
-    if (isSlugAvailable) {
+    if (isSlugAvailable !== null) {
       return next(
         new ValidationError("Slug already exist! please use a different slug!")
       );
@@ -332,6 +333,67 @@ export const restoreProduct = async (
       deletedAt: deletedProduct.deletedAt,
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllProducts = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+    const type = req.query.type as string;
+
+    // Option 1: No filter - get all products
+    const baseFilter = {
+      isDeleted: { not: true }, // Only exclude deleted products
+      status: "Active", // Only get active products
+    };
+
+    const orderBy: Prisma.productsOrderByWithRelationInput =
+      type === "latest"
+        ? { createdAt: "desc" as Prisma.SortOrder }
+        : { createdAt: "asc" as Prisma.SortOrder };
+
+    const [products, total, top10Products] = await Promise.all([
+      prisma.products.findMany({
+        where: baseFilter,
+        skip,
+        take: limit,
+        include: {
+          images: true,
+          shop: true,
+        },
+        orderBy,
+      }),
+      prisma.products.count({
+        where: baseFilter,
+      }),
+      prisma.products.findMany({
+        where: baseFilter,
+        take: 10,
+        include: {
+          images: true,
+          shop: true,
+        },
+        orderBy,
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      products,
+      total,
+      top10Products,
+      top10By: type === "latest" ? "latest" : "topSales", // Fixed typo
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
     next(error);
   }
 };

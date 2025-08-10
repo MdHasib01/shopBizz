@@ -118,7 +118,7 @@ export const login = async (
         email: user.email,
         role: "user",
       },
-      process.env.ACCESS_TOKEN_SECRET as string,
+      process.env.ACCESS_TOKEN_SECRET! as string,
       {
         expiresIn: "15m",
       }
@@ -129,7 +129,7 @@ export const login = async (
         email: user.email,
         role: "user",
       },
-      process.env.REFRESH_TOKEN_SECRET as string,
+      process.env.REFRESH_TOKEN_SECRET! as string,
       {
         expiresIn: "7d",
       }

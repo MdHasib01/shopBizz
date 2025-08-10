@@ -8,16 +8,17 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
       req.cookies["accessToken"] ||
       req.cookies["seller-access-token"] ||
       req.headers.authorization?.split(" ")[1];
+
     if (!token) {
       return res.status(401).json({ error: "Unauthorized! No token provided" });
     }
-
+    console.log("decodning ....");
     // Verify token
     const decoded = jwt.verify(
       token,
       process.env.ACCESS_TOKEN_SECRET! as string
     ) as { id: string; role: "user" | "seller" };
-    console.log("decoded_role", decoded.role);
+    console.log("decoded_role---------", decoded);
     if (!decoded) {
       return res.status(401).json({ error: "Unauthorized! Invalid token" });
     }

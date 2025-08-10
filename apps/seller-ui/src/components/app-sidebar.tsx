@@ -80,7 +80,7 @@ const data = {
     },
     {
       title: "All Products",
-      url: "/dashboard/products",
+      url: "/dashboard/all-products",
       icon: PackageOpen,
     },
   ],

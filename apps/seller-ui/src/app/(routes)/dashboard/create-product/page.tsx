@@ -1,10 +1,10 @@
 "use client";
 import Header from "@/components/header";
 import ImagePlaceHolder from "@/components/ImagePlaceHolder";
-import { ChevronRight, Loader, X } from "lucide-react";
+import { ChevronRight, Loader, Wand, X, Save } from "lucide-react";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, set, useForm } from "react-hook-form";
 import Input from "../../../../components/input/input";
 import ColorSelector from "../../../../components/color-selector";
 import CustomSpecifications from "../../../../components/costom-specifications";
@@ -32,8 +32,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { enhancements } from "@/utils/AI.enhancement";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface UploadedImage {
   fileId: string;
@@ -57,6 +59,13 @@ const page = () => {
   const [pictureUploadingLoader, setPictureUploadingLoader] = useState(false);
   const [pictureDeleteingLoader, setPictureDeleteingLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
+  const [originalImageUrl, setOriginalImageUrl] = useState("");
+  const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [transformationHistory, setTransformationHistory] = useState<string[]>(
+    []
+  );
+  const router = useRouter();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -78,9 +87,9 @@ const page = () => {
       return res?.data?.discount_codes || [];
     },
   });
+
   const categories = data?.categories || [];
   const subCategory = data?.subCategories || {};
-
   const selectedCategory = watch("category");
   const regularPrice = watch("regular_price");
 
@@ -88,9 +97,19 @@ const page = () => {
     return selectedCategory ? subCategory[selectedCategory] : [];
   }, [selectedCategory, subCategory]);
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = async (data: any) => {
+    try {
+      setLoading(true);
+      await axiosInstance.post("/product/api/create-product", data);
+      toast.success("Product created successfully");
+      router.push("/dashboard/all-products");
+    } catch (error: any) {
+      toast.error(error?.data?.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
   const convertFileToBase64 = async (file: File) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -99,18 +118,66 @@ const page = () => {
       reader.onerror = (error) => reject(error);
     });
   };
+
+  // Utility function to check if ImageKit URL is valid
+  const isImageKitUrl = (url: string) => {
+    return url.includes("ik.imagekit.io");
+  };
+
+  // Utility function to test image loading
+  const testImageLoad = (
+    url: string,
+    timeout: number = 10000
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const timer = setTimeout(() => {
+        reject(new Error("Image loading timeout"));
+      }, timeout);
+
+      img.onload = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+
+      img.onerror = () => {
+        clearTimeout(timer);
+        reject(new Error("Failed to load transformed image"));
+      };
+
+      img.src = url;
+    });
+  };
+
   const handleImageChange = async (file: File | null, index: number) => {
     if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size should not exceed 5MB");
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Only JPEG, PNG and WebP files are allowed");
+      return;
+    }
 
     try {
       setPictureUploadingLoader(true);
       const fileName = await convertFileToBase64(file);
+
       const response = await axiosInstance.post(
         "/product/api/upload-product-image",
+        { fileName },
         {
-          fileName,
+          timeout: 30000, // 30 second timeout
+          onUploadProgress: (progressEvent) => {},
         }
       );
+
       const updatedImages = [...images];
       const uploadedImage = {
         file_url: response.data.file_url,
@@ -122,10 +189,9 @@ const page = () => {
         updatedImages.push(null);
       }
       setImages(updatedImages);
-
       setValue(`images`, updatedImages);
     } catch (error) {
-      console.log(error);
+      console.error("Upload failed:", error);
     } finally {
       setPictureUploadingLoader(false);
     }
@@ -157,7 +223,119 @@ const page = () => {
     }
   };
 
+  // Enhanced transformation function with better error handling
+  const applyTransformation = async (transformation: string) => {
+    if (!selectedImage || processing) return;
+
+    // Check if it's a valid ImageKit URL
+    if (!isImageKitUrl(selectedImage)) {
+      toast.error(
+        "Image transformations are only available for ImageKit hosted images."
+      );
+      return;
+    }
+
+    setProcessing(true);
+    setActiveEffect(transformation);
+
+    try {
+      const baseUrl = originalImageUrl || selectedImage.split("?")[0];
+
+      // For background removal and complex transformations, use smaller image first
+      const isComplexTransform =
+        transformation.includes("e-removedotbg") ||
+        transformation.includes("e-upscale") ||
+        transformation.includes("e-enhance");
+
+      let finalTransform = transformation;
+      if (isComplexTransform) {
+        finalTransform = `w-800,h-600,${transformation}`;
+      }
+
+      const transformedUrl = `${baseUrl}?tr=${finalTransform}`;
+
+      // Test the transformation with longer timeout for complex operations
+      const timeout = isComplexTransform ? 25000 : 15000;
+      await testImageLoad(transformedUrl, timeout);
+
+      setSelectedImage(transformedUrl);
+      setTransformationHistory((prev) => [...prev, transformation]);
+    } catch (error) {
+      console.error("Transformation failed:", error);
+
+      // Try fallback without resizing for complex transforms
+      if (transformation.includes("e-removedotbg")) {
+        try {
+          const baseUrl = originalImageUrl || selectedImage.split("?")[0];
+          const fallbackUrl = `${baseUrl}?tr=${transformation}`;
+          await testImageLoad(fallbackUrl, 30000); // Even longer timeout
+          setSelectedImage(fallbackUrl);
+          setTransformationHistory((prev) => [...prev, transformation]);
+        } catch (fallbackError) {
+          console.error("Fallback also failed:", fallbackError);
+          toast.error(
+            "Enhancement failed. The background removal service might be busy. Please try again in a few moments."
+          );
+          setActiveEffect(null);
+        }
+      } else {
+        toast.error(
+          "Enhancement failed. Please try a different effect or check your internet connection."
+        );
+        setActiveEffect(null);
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Function to save enhanced image back to your images array
+  const saveEnhancedImage = async () => {
+    if (!selectedImage || selectedImage === originalImageUrl) {
+      setOpenImageModal(false);
+      return;
+    }
+
+    try {
+      setProcessing(true);
+
+      const currentImageIndex = images.findIndex(
+        (img) => img && img.file_url.split("?")[0] === originalImageUrl
+      );
+
+      if (currentImageIndex !== -1) {
+        const updatedImages = [...images];
+        if (updatedImages[currentImageIndex]) {
+          updatedImages[currentImageIndex] = {
+            ...updatedImages[currentImageIndex]!,
+            file_url: selectedImage,
+          };
+          setImages(updatedImages);
+          setValue("images", updatedImages);
+        }
+      }
+
+      setOpenImageModal(false);
+      toast.success("Enhanced image saved successfully!");
+    } catch (error) {
+      console.error("Failed to save enhanced image:", error);
+      toast.error("Failed to save enhanced image");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Handle image click to open modal
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setOriginalImageUrl(imageUrl.split("?")[0]); // Store clean URL
+    setOpenImageModal(true);
+    setActiveEffect(null);
+    setTransformationHistory([]);
+  };
+
   const handleSaveDraft = () => {};
+
   return (
     <>
       <Header pageTitle="Create Product" />
@@ -190,7 +368,7 @@ const page = () => {
                 onImageChange={handleImageChange}
                 onRemove={handleRemoveImage}
                 setOpenImageModal={setOpenImageModal}
-                setSelectedImage={setSelectedImage}
+                setSelectedImage={handleImageClick}
                 defaultImage={null}
                 index={0}
               />
@@ -208,7 +386,7 @@ const page = () => {
                     onImageChange={handleImageChange}
                     onRemove={handleRemoveImage}
                     setOpenImageModal={setOpenImageModal}
-                    setSelectedImage={setSelectedImage}
+                    setSelectedImage={handleImageClick}
                     defaultImage={null}
                     index={index + 1}
                     key={index}
@@ -246,7 +424,7 @@ const page = () => {
                     type="textarea"
                     rows={7}
                     cols={10}
-                    {...register("description", {
+                    {...register("short_description", {
                       required: "Description is required",
                       validate: (value) => {
                         const wordCount = value.trim().split(/\s+/).length;
@@ -257,9 +435,9 @@ const page = () => {
                       },
                     })}
                   />
-                  {errors.description && (
+                  {errors.short_description && (
                     <span className="text-destructive">
-                      {errors.description.message as string}
+                      {errors.short_description.message as string}
                     </span>
                   )}
                 </div>
@@ -286,7 +464,7 @@ const page = () => {
                     type="text"
                     placeholder="1 Year / No Warranty"
                     {...register("warranty", {
-                      required: "Seperate tags by commas",
+                      required: "Warranty information is required",
                     })}
                   />
                   {errors.warranty && (
@@ -300,8 +478,8 @@ const page = () => {
                   <Input
                     label="Slug *"
                     type="text"
-                    placeholder="Slug"
-                    {...register("warranty", {
+                    placeholder="product-slug-example"
+                    {...register("slug", {
                       required: "Slug is required!",
                       pattern: {
                         value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
@@ -318,9 +496,9 @@ const page = () => {
                       },
                     })}
                   />
-                  {errors.warranty && (
+                  {errors.slug && (
                     <span className="text-destructive">
-                      {errors.warranty.message as string}
+                      {errors.slug.message as string}
                     </span>
                   )}
                 </div>
@@ -381,13 +559,9 @@ const page = () => {
                     name="category"
                     control={control}
                     render={({ field }) => {
-                      console.log("Field object:", field);
-                      console.log("Current value:", field.value);
-
                       return (
                         <Select
                           onValueChange={(val) => {
-                            console.log("Changing to:", val);
                             field.onChange(val);
                           }}
                           value={field.value}
@@ -415,8 +589,9 @@ const page = () => {
                     {errors.category.message as string}
                   </span>
                 )}
+
                 <label className="product-input-label mt-4">
-                  Sub Categroies *
+                  Sub Categories *
                 </label>
                 {isLoading ? (
                   <p className="text-muted-foreground">
@@ -428,16 +603,12 @@ const page = () => {
                   </p>
                 ) : (
                   <Controller
-                    name="subcategory"
+                    name="subCategory"
                     control={control}
                     render={({ field }) => {
-                      console.log("Field object:", field);
-                      console.log("Current value:", field.value);
-
                       return (
                         <Select
                           onValueChange={(val) => {
-                            console.log("Changing to:", val);
                             field.onChange(val);
                           }}
                           value={field.value}
@@ -465,6 +636,7 @@ const page = () => {
                     {errors.subcategory.message as string}
                   </span>
                 )}
+
                 <div className="mt-4">
                   <label className="block font-semibold text-muted-foreground mb-1">
                     Description *
@@ -496,17 +668,18 @@ const page = () => {
                     </span>
                   )}
                 </div>
+
                 <div className="mt-2">
                   <Input
-                    label="Viduo Url"
+                    label="Video Url"
                     type="text"
-                    placeholder="https://www.youtube.com/embaded/xyz123"
+                    placeholder="https://www.youtube.com/embed/xyz123"
                     {...register("video_url", {
                       pattern: {
                         value:
                           /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/,
                         message:
-                          "Invalid url format!, use format like https://www.youtube.com/embaded/xyz123",
+                          "Invalid url format!, use format like https://www.youtube.com/embed/xyz123",
                       },
                     })}
                   />
@@ -521,7 +694,7 @@ const page = () => {
                   <Input
                     label="Regular Price"
                     type="text"
-                    placeholder="20$"
+                    placeholder="20"
                     {...register("regular_price", {
                       valueAsNumber: true,
                       min: { value: 1, message: "Price must be at least 1" },
@@ -535,10 +708,11 @@ const page = () => {
                     </p>
                   )}
                 </div>
+
                 <div className="mt-2">
                   <Input
                     label="Sale Price *"
-                    placeholder="15$"
+                    placeholder="15"
                     type="text"
                     {...register("sale_price", {
                       required: "Sale Price is required",
@@ -562,6 +736,7 @@ const page = () => {
                     </p>
                   )}
                 </div>
+
                 <div className="mt-2">
                   <Input
                     label="Stock *"
@@ -636,45 +811,166 @@ const page = () => {
           </div>
         </div>
 
-        {
-          <AlertDialog open={openImageModal} onOpenChange={setOpenImageModal}>
-            <AlertDialogContent>
-              <div>
-                <div className="flex justify-between items-center">
-                  <h1>Enhance Product Imagge</h1>
-                  <Button onClick={() => setOpenImageModal(false)}>
-                    <X className="h-4 w-4" />
-                  </Button>
+        {/* Enhanced Image Modal */}
+        <AlertDialog open={openImageModal} onOpenChange={setOpenImageModal}>
+          <AlertDialogContent className="max-w-2xl">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h1 className="text-lg font-semibold">Enhance Product Image</h1>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOpenImageModal(false)}
+                  disabled={processing}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex justify-center flex-col items-center max-w-[400px] mx-auto my-4">
+                <div className="relative">
+                  <img
+                    src={selectedImage}
+                    alt="Product image"
+                    style={{
+                      maxHeight: "400px",
+                      maxWidth: "400px",
+                      objectFit: "contain",
+                      borderRadius: "8px",
+                    }}
+                    loading="lazy"
+                    onError={(e) => {
+                      console.error("Image failed to load:", selectedImage);
+                      // Fallback to original image if transformation fails
+                      const originalUrl = selectedImage.split("?")[0];
+                      e.currentTarget.src = originalUrl;
+                    }}
+                  />
+
+                  {processing && (
+                    <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center">
+                      <div className="bg-white/90 px-3 py-2 rounded-md flex items-center gap-2">
+                        <Loader className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Processing...</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex justify-center items-center max-w-[250px] mx-auto my-4">
-                  <Image
-                    src={selectedImage}
-                    alt="image"
-                    height={400}
-                    width={400}
-                    objectFit="contain"
-                  />
-                </div>
+                {processing && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader className="h-4 w-4 animate-spin" />
+                    {activeEffect?.includes("e-removedotbg")
+                      ? "Removing background... This may take up to 30 seconds."
+                      : "Applying enhancement..."}
+                  </div>
+                )}
               </div>
-            </AlertDialogContent>
-          </AlertDialog>
-        }
+
+              {selectedImage && isImageKitUrl(selectedImage) && (
+                <div className="mt-4 space-y-3">
+                  <h3 className="text-foreground text-sm font-semibold">
+                    AI Enhancements
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 max-h-[250px] overflow-y-hidden">
+                    {enhancements.map(({ label, effect }) => (
+                      <button
+                        key={effect}
+                        onClick={() => applyTransformation(effect)}
+                        disabled={processing}
+                        className={`px-3 flex items-center gap-2 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                          processing
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:bg-muted/80"
+                        } ${
+                          activeEffect === effect
+                            ? "bg-primary text-primary-foreground border border-primary shadow-md"
+                            : "bg-muted text-foreground border border-border hover:bg-muted/80"
+                        }`}
+                      >
+                        <Wand className="h-3 w-3" />
+                        {processing && activeEffect === effect
+                          ? "Processing..."
+                          : label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    {/* Reset button */}
+                    <button
+                      onClick={() => {
+                        const originalUrl = selectedImage.split("?")[0];
+                        setSelectedImage(originalUrl);
+                        setActiveEffect(null);
+                        setTransformationHistory([]);
+                      }}
+                      disabled={processing}
+                      className="flex-1 px-3 py-2 text-sm bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors disabled:opacity-50"
+                    >
+                      Reset to Original
+                    </button>
+
+                    {/* Save enhanced image button */}
+                    {selectedImage !== originalImageUrl && (
+                      <button
+                        onClick={saveEnhancedImage}
+                        disabled={processing}
+                        className="flex-1 px-3 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        <Save className="h-3 w-3" />
+                        Save Enhanced Image
+                      </button>
+                    )}
+                  </div>
+
+                  {transformationHistory.length > 0 && (
+                    <div className="mt-3 p-2 bg-muted/50 rounded-md">
+                      <p className="text-xs text-muted-foreground">
+                        Applied enhancements: {transformationHistory.join(", ")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {selectedImage && !isImageKitUrl(selectedImage) && (
+                <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-800">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>Note:</strong> AI enhancements are only available
+                    for images uploaded to ImageKit. Please upload your image
+                    through the form to use these features.
+                  </p>
+                </div>
+              )}
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <div className="mt-6 flex justify-end gap-3">
           {isChanged && (
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 duration-300"
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 duration-300 disabled:opacity-50"
+              disabled={loading}
             >
               Save Draft
             </button>
           )}
           <button
             type="submit"
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 duration-300"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 duration-300 disabled:opacity-50 flex items-center gap-2"
+            disabled={loading}
           >
-            {isLoading ? "Creating..." : "Create Product"}
+            {loading ? (
+              <>
+                <Loader className="h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Product"
+            )}
           </button>
         </div>
       </form>

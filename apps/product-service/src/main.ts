@@ -1,4 +1,5 @@
 import express from "express";
+import "./jobs/product.crone.job";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "../../../packages/errorHandler/errorMiddleware";
@@ -6,7 +7,6 @@ import productRouter from "./routes/product.routes";
 import productImageRouter from "./routes/productImage.routes";
 // import swaggerUi from "swagger-ui-express";
 // const swaggerDocument = require("./swagger.json");
-
 const app = express();
 app.use(
   cors({

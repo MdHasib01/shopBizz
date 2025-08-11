@@ -32,6 +32,7 @@ const page = () => {
     staleTime: 1000 * 60 * 2,
     retry: 1,
   });
+
   return (
     <div className="">
       <HeroSection />

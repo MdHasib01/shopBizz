@@ -28,7 +28,7 @@ const HeaderBottom = () => {
   return (
     <div
       className={`w-full transation-all duration-300  ${
-        isSticky ? "fixed top-0 left-0 z-[100]  bg-white shadow-lg" : "relative"
+        isSticky ? "fixed top-0 left-0 z-[10]  bg-white shadow-lg" : "relative"
       }`}
     >
       <div

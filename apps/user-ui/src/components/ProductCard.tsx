@@ -1,6 +1,9 @@
+"use client";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Rating from "./Ratings";
+import { Eye, Heart, ShoppingBag } from "lucide-react";
+import ProductDetailsCard from "./ProductDetailsCard";
 
 const ProductCard = ({
   product,
@@ -9,6 +12,33 @@ const ProductCard = ({
   product: any;
   isEvent?: boolean;
 }) => {
+  const [timeLeft, setTimeLeft] = useState("");
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (isEvent && product?.ending_date) {
+      const interval = setInterval(() => {
+        const endTime = new Date(product?.ending_date).getTime();
+        const currentTime = new Date().getTime();
+        const diff = endTime - currentTime;
+
+        if (diff <= 0) {
+          setTimeLeft("Expired");
+          clearInterval(interval);
+          return;
+        }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      }, 60000);
+      return () => clearInterval(interval);
+    }
+    return;
+  }, [isEvent, product?.ending_date]);
+
   return (
     <div className="w-ful min-h-[350px] h-max bg-white rounded-lg relative">
       {isEvent && (
@@ -45,6 +75,50 @@ const ProductCard = ({
       <div className="mt-2 px-2 ">
         <Rating rating={product?.ratings} />
       </div>
+      <div className="mt-2 flex justify-between items-center px-2">
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-bold text-gray-900">
+            ${product?.sale_price}
+          </span>
+          <span className="text-sm font-bold text-gray-400 line-through">
+            ${product?.regular_price}
+          </span>
+        </div>
+        <span className="text-green-500 text-sm font-medium">
+          {product?.totalSales}
+        </span>
+      </div>
+      {isEvent && timeLeft && (
+        <div className="mt-2">
+          <div className="inline-block text-xs bg-orange-100 text-orange-500">
+            {timeLeft}
+          </div>
+        </div>
+      )}
+      <div className="absolute z-10 flex flex-col gap-3 right-3 top-10">
+        <div className="bg-white rounded-full p-[6px] shadow-md">
+          <Heart
+            className="cursor-pointer hover:scale-110 transation"
+            size={22}
+            fill={"red"}
+            stroke="red"
+          />
+        </div>
+        <div className="bg-white rounded-full shadow-md p-[6px]">
+          <Eye
+            className="cursor-pointer text-[#4b5563] hover:scale-110 transation"
+            size={22}
+            onClick={() => setOpen(!open)}
+          />
+        </div>
+        <div className="bg-white rounded-full shadow-md p-[6px]">
+          <ShoppingBag
+            className="cursor-pointer text-[#4b5563] hover:scale-110 transation"
+            size={22}
+          />
+        </div>
+      </div>
+      {open && <ProductDetailsCard data={product} setOpen={setOpen} />}
     </div>
   );
 };

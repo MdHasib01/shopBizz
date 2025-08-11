@@ -6,8 +6,11 @@ import { HiOutlineUser } from "react-icons/hi2";
 import { RiShoppingCartLine } from "react-icons/ri";
 import HeaderBottom from "./headerBottom";
 import { useUser } from "@/hooks/useUser";
+import { useStore } from "@/store";
 const Header = () => {
   const { user, isLoading } = useUser();
+  const wishlist = useStore((state: any) => state.wishlist);
+  const cart = useStore((state: any) => state.cart);
   console.log(user);
   return (
     <div className="w-full bg-white">
@@ -53,17 +56,21 @@ const Header = () => {
               )}
             </div>
           </div>
-          <div className="w-6 h-6 flex justify-center items-center relative">
-            <RiShoppingCartLine className="w-6 h-6" />
-            <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
-              3
-            </div>
+          <div className="w-6 h-6 flex justify-center items-center relative cursor-pointer">
+            <Link href="/cart">
+              <RiShoppingCartLine className="w-6 h-6" />
+              <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
+                {cart?.length}
+              </div>
+            </Link>
           </div>
-          <div className="w-6 h-6 flex justify-center items-center relative">
-            <AiOutlineHeart className="w-6 h-6" />
-            <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
-              2
-            </div>
+          <div className="w-6 h-6 flex justify-center items-center relative cursor-pointer">
+            <Link href="/wishlist">
+              <AiOutlineHeart className="w-6 h-6" />
+              <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
+                {wishlist?.length}
+              </div>
+            </Link>
           </div>
         </div>
       </div>

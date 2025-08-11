@@ -6,11 +6,13 @@ import { navItems } from "@/configs/constants";
 import Link from "next/link";
 import { AiOutlineHeart } from "react-icons/ai";
 import { HiOutlineUser } from "react-icons/hi2";
+import { useStore } from "@/store";
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-
+  const wishlist = useStore((state: any) => state.wishlist);
+  const cart = useStore((state: any) => state.cart);
   // Track scroll position
   useEffect(() => {
     const handleScroll = () => {
@@ -85,17 +87,21 @@ const HeaderBottom = () => {
                   </Link>
                 </div>
               </div>
-              <div className="w-6 h-6 flex justify-center items-center relative">
-                <RiShoppingCartLine className="w-6 h-6" />
-                <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
-                  3
-                </div>
+              <div className="w-6 h-6 flex justify-center items-center relative cursor-pointer">
+                <Link href="/cart">
+                  <RiShoppingCartLine className="w-6 h-6" />
+                  <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
+                    {cart.length}
+                  </div>
+                </Link>
               </div>
-              <div className="w-6 h-6 flex justify-center items-center relative">
-                <AiOutlineHeart className="w-6 h-6" />
-                <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
-                  2
-                </div>
+              <div className="w-6 h-6 flex justify-center items-center relative cursor-pointer">
+                <Link href="/wishlist">
+                  <AiOutlineHeart className="w-6 h-6" />
+                  <div className="absolute top-[-5px] right-[-5px] border-white border flex justify-center text-xs  items-center w-4 h-4 bg-red-500 text-white rounded-full">
+                    {wishlist.length}
+                  </div>
+                </Link>
               </div>
             </div>
           )}

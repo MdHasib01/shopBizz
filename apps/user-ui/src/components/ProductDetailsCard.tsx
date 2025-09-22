@@ -26,6 +26,11 @@ const ProductDetailsCard = ({
 
   const location = useLocationTracking();
   const deviceInfo = useDeviceTracking();
+
+  // Default image fallback
+  const defaultImage =
+    "https://ik.imagekit.io/shopbizz/products/product.png?updatedAt=1754902873558";
+
   // wishlist store ----
   const addToWishlist = useStore((state: any) => state.addToWishlist);
   const removeFromWishlist = useStore((state: any) => state.removeFromWishlist);
@@ -57,8 +62,8 @@ const ProductDetailsCard = ({
         <div className="w-full flex flex-col md:flex-row">
           <div className="w-full md:w-1/2 h-full">
             <Image
-              src={data?.images?.[activeImage]?.url}
-              alt={data?.images?.[activeImage]?.url}
+              src={data?.images?.[activeImage]?.url || defaultImage}
+              alt={data?.images?.[activeImage]?.url || "Product image"}
               height={500}
               width={500}
               className="w-full max-h-[400px] rounded-lg object-contain"
@@ -76,8 +81,8 @@ const ProductDetailsCard = ({
                   onClick={() => setActiveImage(index)}
                 >
                   <Image
-                    src={image?.url}
-                    alt={image?.url}
+                    src={image?.url || defaultImage}
+                    alt={image?.url || "Product thumbnail"}
                     height={50}
                     width={50}
                     className="w-full rounded-md object-cover"
@@ -92,8 +97,8 @@ const ProductDetailsCard = ({
               <div className="flex items-center-justify-between">
                 <div className="flex items-start gap-3">
                   <Image
-                    src={data?.shop?.avatar}
-                    alt={data?.shop?.avatar}
+                    src={data?.shop?.avatar || defaultImage}
+                    alt={data?.shop?.avatar || "Shop avatar"}
                     height={50}
                     width={50}
                     className="w-[60px] h-[60px] rounded-full object-cover"

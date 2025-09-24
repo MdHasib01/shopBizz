@@ -1,7 +1,3 @@
-import { kafka } from "../../../../packages/libs/kafka";
-
-const producer = kafka.producer();
-
 export async function sendKafkaEvent(eventData: {
   userId: string;
   productId: string;
@@ -12,18 +8,15 @@ export async function sendKafkaEvent(eventData: {
   city: string;
 }) {
   try {
-    await producer.connect();
-    await producer.send({
-      topic: "user-events",
-      messages: [
-        {
-          value: JSON.stringify(eventData),
-        },
-      ],
-    });
+    const doFetch = (globalThis as any).fetch;
+    if (doFetch) {
+      await doFetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventData),
+      });
+    }
   } catch (error) {
     console.log(error);
-  } finally {
-    await producer.disconnect();
   }
 }

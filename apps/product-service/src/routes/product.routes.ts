@@ -7,6 +7,7 @@ import {
   getAllProducts,
   getCategories,
   getDiscountCodes,
+  getProductDetails,
   getShopProducts,
   restoreProduct,
 } from "../controllers/product.controller";
@@ -21,5 +22,6 @@ router.post("/create-product", isAuthenticated, createProduct);
 router.get("/get-shop-products", isAuthenticated, getShopProducts);
 router.delete("/delete-product/:productId", isAuthenticated, deleteProduct);
 router.put("/restore-product/:productId", isAuthenticated, restoreProduct);
-router.get("/get-all-products", isAuthenticated, getAllProducts);
+router.get("/get-all-products", getAllProducts);
+router.get("/get-product/:slug", getProductDetails);
 export default router;

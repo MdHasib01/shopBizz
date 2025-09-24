@@ -4,10 +4,10 @@ import React, { useEffect, useState } from "react";
 import Rating from "./Ratings";
 import { Eye, Heart, ShoppingBag } from "lucide-react";
 import ProductDetailsCard from "./ProductDetailsCard";
-import { useStore } from "@/store";
-import { useUser } from "@/hooks/useUser";
-import useLocationTracking from "@/hooks/useLocationTracking";
-import useDeviceTracking from "@/hooks/useDeviceTracking";
+import { useUser } from "../hooks/useUser";
+import { useStore } from "../store";
+import useLocationTracking from "../hooks/useLocationTracking";
+import useDeviceTracking from "../hooks/useDeviceTracking";
 
 const ProductCard = ({
   product,
@@ -71,7 +71,7 @@ const ProductCard = ({
         </div>
       )}
 
-      <Link href={`/products/${product?.slug}`}>
+      <Link href={`/product/${product?.slug}`}>
         <img
           src={product?.images[0]?.url || ""}
           alt={product?.title || ""}

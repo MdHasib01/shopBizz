@@ -7,6 +7,9 @@ export const updateUserAnalytics = async (event: any) => {
       where: {
         userId: event.userId,
       },
+      select: {
+        actions: true,
+      },
     });
 
     let updateActions: any = existingData?.actions || [];
@@ -34,15 +37,20 @@ export const updateUserAnalytics = async (event: any) => {
         timestamp: new Date(),
       });
     } else if (event.action === "remove_from_cart") {
-      updateActions.filter(
+      updateActions = updateActions.filter(
         (entry: any) =>
-          entry.productId !== event.productId && entry.action !== "add_to_cart"
+          !(
+            entry.productId === event.productId &&
+            entry.action === "add_to_cart"
+          )
       );
     } else if (event.action === "remove_from_wishlist") {
-      updateActions.filter(
+      updateActions = updateActions.filter(
         (entry: any) =>
-          entry.productId !== event.productId &&
-          entry.action !== "add_to_wishlist"
+          !(
+            entry.productId === event.productId &&
+            entry.action === "add_to_wishlist"
+          )
       );
     }
 
@@ -88,9 +96,9 @@ export const updateProductAnalytics = async (event: any) => {
     const updateFields: any = {};
 
     if (event.action === "product_view") updateFields.views = { increment: 1 };
-    if (event.actoin === "add_to_cart")
+    if (event.action === "add_to_cart")
       updateFields.cartAdds = { increment: 1 };
-    if (event.actoin === "add_to_wishlist")
+    if (event.action === "add_to_wishlist")
       updateFields.wishlistAdds = { increment: 1 };
     if (event.action === "remove_from_cart")
       updateFields.cartAdds = { increment: -1 };

@@ -6,10 +6,10 @@ import Rating from "./Ratings";
 import { Heart, MapPin, MessageCircle, ShoppingCart, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import RichTextDisplay from "./RichTextDisplay";
-import { useStore } from "@/store";
-import useLocationTracking from "@/hooks/useLocationTracking";
-import { useUser } from "@/hooks/useUser";
-import useDeviceTracking from "@/hooks/useDeviceTracking";
+import useLocationTracking from "../hooks/useLocationTracking";
+import { useUser } from "../hooks/useUser";
+import useDeviceTracking from "../hooks/useDeviceTracking";
+import { useStore } from "../store";
 
 const ProductDetailsCard = ({
   data,

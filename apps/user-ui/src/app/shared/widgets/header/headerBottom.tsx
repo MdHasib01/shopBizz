@@ -2,11 +2,12 @@
 import { IoMdArrowDropdown } from "react-icons/io";
 import { RiMenu2Line, RiShoppingCartLine } from "react-icons/ri";
 import { useEffect, useState } from "react";
-import { navItems } from "@/configs/constants";
 import Link from "next/link";
 import { AiOutlineHeart } from "react-icons/ai";
 import { HiOutlineUser } from "react-icons/hi2";
-import { useStore } from "@/store";
+import { useStore } from "../../../../store";
+import { navItems } from "../../../../configs/constants";
+import { NavItemsTypes } from "../../../../configs/constants";
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);

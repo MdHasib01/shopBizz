@@ -68,6 +68,7 @@ model shops {
   reviewes      shopReviews[]  
   sellers       sellers @relation(fields: [sellerId], references: [id])
   products      products[]
+  productAnalytics productAnalytics[]  // Add this line
 }
 
 model sellers {
@@ -139,4 +140,40 @@ model products {
   
   images                images[]
   shop                  shops @relation(fields: [shopId], references: [id])
+  productAnalytics      productAnalytics[]
+}
+
+// Add these new models at the end of the file:
+
+model userAnalytics {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @unique
+  lastVisited DateTime
+  lastTrained DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  country     String?
+  city        String?
+  device      String?
+  actions     Json[]   // Array of action objects with productId, shopId, action, timestamp
+
+  @@map("userAnalytics")
+}
+
+model productAnalytics {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId     String   @unique @db.ObjectId
+  shopId        String   @db.ObjectId
+  views         Int      @default(0)
+  cartAdds      Int      @default(0)
+  wishlistAdds  Int      @default(0)
+  purchases     Int      @default(0)
+  lastViewedAt  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product       products @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shop          shops    @relation(fields: [shopId], references: [id])
+
+  @@map("productAnalytics")
 }

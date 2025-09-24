@@ -5,8 +5,8 @@ import { AiOutlineHeart } from "react-icons/ai";
 import { HiOutlineUser } from "react-icons/hi2";
 import { RiShoppingCartLine } from "react-icons/ri";
 import HeaderBottom from "./headerBottom";
-import { useUser } from "@/hooks/useUser";
-import { useStore } from "@/store";
+import { useUser } from "../../../../hooks/useUser";
+import { useStore } from "../../../../store";
 const Header = () => {
   const { user, isLoading } = useUser();
   const wishlist = useStore((state: any) => state.wishlist);

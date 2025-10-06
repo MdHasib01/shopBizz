@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import axiosInstance from "@/utils/axiosInstance";
+import ProductDetails from "./product-details";
 
 async function fetchProductDetails(slug: string) {
   const response = await axiosInstance.get(`/product/api/get-product/${slug}`);
@@ -26,5 +27,8 @@ export async function generateMetaData({
 }
 const Page = async ({ params }: { params: { slug: string } }) => {
   const productDetails = await fetchProductDetails(params?.slug);
-  return <div>{params.slug}</div>;
+
+  return <ProductDetails productDetails={productDetails} />;
 };
+
+export default Page;

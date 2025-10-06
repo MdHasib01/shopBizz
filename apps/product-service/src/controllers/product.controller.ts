@@ -685,3 +685,63 @@ export const searchProducts = async (
     next(error);
   }
 };
+
+// Top shops
+export const topShops = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const topshopsData = await prisma.orders.groupBy({
+      by: ["shopId"],
+      _sum: {
+        total: true,
+      },
+      orderBy: {
+        _sum: {
+          total: "desc",
+        },
+      },
+      take: 10,
+    });
+
+    const shopIds = topshopsData.map((item: any) => item.shopId);
+    const topShops = await prisma.shops.findMany({
+      where: {
+        id: {
+          in: shopIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        coverBanner: true,
+        avatar: true,
+        followers: true,
+        address: true,
+        ratings: true,
+        category: true,
+      },
+    });
+
+    const enrichedTopShops = topShops.map((shop) => {
+      const salesData = topshopsData.find(
+        (item: any) => item.shopId === shop.id
+      );
+
+      return {
+        ...shop,
+        sales: salesData?._sum?.total ?? 0,
+      };
+    });
+
+    const top10Shops = enrichedTopShops
+      .sort((a: any, b: any) => b.totalSales - a.totalSales)
+      .slice(0, 10);
+
+    res.json({ success: true, top10Shops });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -14,6 +14,7 @@ import {
   getShopProducts,
   restoreProduct,
   searchProducts,
+  topShops,
 } from "../controllers/product.controller";
 const router: Router = express.Router();
 import isAuthenticated from "../middleware/isAuthenticated";
@@ -32,8 +33,9 @@ router.get("/get-all-products", getAllProducts);
 
 router.get("/get-product/:slug", getProductDetails);
 // Search and filters routes --
-router.get("get-filtered-products", getFilteredProducts);
+router.get("/get-filtered-products", getFilteredProducts);
 router.get("/get-filtered-offers", getFilteredEvents);
 router.get("/get-filtered-shops", getFilteredShops);
 router.get("/search-products", searchProducts);
+router.get("/top-shops", topShops);
 export default router;

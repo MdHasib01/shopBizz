@@ -31,8 +31,8 @@ model users {
   following   String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  
+   shopFollows   shopFollowers[] 
+   orders        orders[] 
   images      images[]
   shopReviews shopReviews[]
 }
@@ -49,11 +49,28 @@ model shopReviews {
   shops     shops? @relation(fields: [shopsId], references: [id])
 }
 
+model shopFollowers {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  shopId    String  @db.ObjectId
+  userId    String  @db.ObjectId
+  createdAt DateTime @default(now())
+
+  shop      shops   @relation(fields: [shopId], references: [id])
+  user      users   @relation(fields: [userId], references: [id])
+
+  // prevent duplicate follows
+  @@unique([shopId, userId], name: "shop_user_unique")
+  @@index([userId])
+  @@index([shopId])
+}
+
+
 model shops {
   id            String @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   bio           String
   category      String
+  avatar        String?
   coverBanner   String?
   address       String
   opening_hours String?
@@ -63,12 +80,14 @@ model shops {
   sellerId      String @unique @db.ObjectId
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+  followers         shopFollowers[] 
   images        images[]  
   reviewes      shopReviews[]  
   sellers       sellers @relation(fields: [sellerId], references: [id])
   products      products[]
-  productAnalytics productAnalytics[]  // Add this line
+  productAnalytics productAnalytics[] 
+   orders          orders[]
+  
 }
 
 model sellers {
@@ -176,4 +195,47 @@ model productAnalytics {
   shop          shops    @relation(fields: [shopId], references: [id])
 
   @@map("productAnalytics")
+}
+
+enum orderStatus {
+  Pending
+  Paid
+  Processing
+  Shipped
+  Delivered
+  Cancelled
+  Refunded
+}
+
+model orders {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber     String   @unique
+
+  // who placed the order
+  orderBy         String   @db.ObjectId
+  user            users    @relation(fields: [orderBy], references: [id])
+
+  // 👇 add these so your groupBy works
+  shopId          String   @db.ObjectId
+  shop            shops    @relation(fields: [shopId], references: [id])
+
+  // 👇 totals (so you can _sum.total)
+  subtotal        Float    @default(0)
+  shipping        Float    @default(0)
+  discount        Float    @default(0)
+  tax             Float    @default(0)
+  total           Float    @default(0)
+  currency        String   @default("BDT")
+
+  status          orderStatus @default(Pending)
+  shippingAddress Json
+  billingAddress  Json?
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([orderBy])
+  @@index([shopId])  // 👈 important for your groupBy + lookup
+  @@index([status])
 }

@@ -21,7 +21,7 @@ const colors = [
 ];
 
 const sizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
-const ProductsPage = () => {
+const OffersPage = () => {
   const router = useRouter();
   const [isProductLoading, setIsProductLoading] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 1199]);
@@ -50,7 +50,7 @@ const ProductsPage = () => {
       query.set("limit", "12");
 
       const res = await axiosInstance.get(
-        `/product/api/get-filtered-products?${query.toString()}`
+        `/product/api/get-filtered-offers?${query.toString()}`
       );
 
       setProducts(res.data.products);
@@ -287,8 +287,8 @@ const ProductsPage = () => {
               </div>
             ) : products?.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {products?.map((product: any) => (
-                  <ProductCard key={product._id} product={product} />
+                {data?.products?.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
@@ -320,4 +320,4 @@ const ProductsPage = () => {
   );
 };
 
-export default ProductsPage;
+export default OffersPage;

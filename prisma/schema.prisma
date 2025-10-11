@@ -12,15 +12,14 @@ model images {
   file_id    String
   url        String
   
-
   userId     String? @db.ObjectId 
   shopId     String? @db.ObjectId 
   productsId String? @db.ObjectId
 
 
-  user       users?    @relation(fields: [userId], references: [id])
-  shop       shops?    @relation(fields: [shopId], references: [id])
-  product    products? @relation(fields: [productsId], references: [id])
+  users       users?    @relation(fields: [userId], references: [id])
+  shops       shops?    @relation(fields: [shopId], references: [id])
+  products    products? @relation(fields: [productsId], references: [id])
 }
 
 model users {
@@ -77,16 +76,16 @@ model shops {
   website       String?
   socialLinks   Json[]
   ratings       Float @default(0)
+  reviewes      shopReviews[]  
   sellerId      String @unique @db.ObjectId
+  sellers       sellers @relation(fields: [sellerId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  followers         shopFollowers[] 
+  followers     shopFollowers[] 
   images        images[]  
-  reviewes      shopReviews[]  
-  sellers       sellers @relation(fields: [sellerId], references: [id])
   products      products[]
   productAnalytics productAnalytics[] 
-   orders          orders[]
+  orders          orders[]
   
 }
 
@@ -101,6 +100,7 @@ model sellers {
   shop         shops?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  shopid       String? @db.ObjectId
 }
 
 model site_config {

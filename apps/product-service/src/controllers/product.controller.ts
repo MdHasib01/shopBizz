@@ -438,39 +438,43 @@ export const getFilteredProducts = async (
 
     const parsedPriceRange =
       typeof priceRange === "string"
-        ? priceRange.split(",").map(Number)
+        ? priceRange.split(",").map((v) => Number(v.trim()))
+        : Array.isArray(priceRange) && priceRange.length === 2
+        ? [Number(priceRange[0]), Number(priceRange[1])]
         : [0, 10000];
 
-    const parsedPage = Number(page);
-    const parsedLimit = Number(limit);
-
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.max(1, Number(limit) || 12);
     const skip = (parsedPage - 1) * parsedLimit;
+
+    const toArray = (v: any) =>
+      Array.isArray(v)
+        ? v
+        : String(v)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+
     const filters: Record<string, any> = {
       sale_price: {
         gte: parsedPriceRange[0],
         lte: parsedPriceRange[1],
       },
-      starting_date: null,
     };
 
-    if (categories && (categories as string[]).length > 0) {
-      filters.category = {
-        in: Array.isArray(categories)
-          ? categories
-          : String(categories).split(","),
-      };
+    const categoryList = toArray(categories);
+    if (categoryList.length) {
+      filters.category = { in: categoryList };
     }
 
-    if (sizes && (sizes as string[]).length > 0) {
-      filters.size = {
-        in: Array.isArray(sizes) ? sizes : [sizes],
-      };
+    const sizeList = toArray(sizes);
+    if (sizeList.length) {
+      filters.sizes = { hasSome: sizeList };
     }
 
-    if (colors && (colors as string[]).length > 0) {
-      filters.color = {
-        in: Array.isArray(colors) ? colors : [colors],
-      };
+    const colorList = toArray(colors);
+    if (colorList.length) {
+      filters.colors = { hasSome: colorList };
     }
 
     const [products, total] = await Promise.all([
@@ -501,6 +505,7 @@ export const getFilteredProducts = async (
     next(error);
   }
 };
+
 export const getFilteredEvents = async (
   req: any,
   res: Response,
@@ -612,13 +617,14 @@ export const getFilteredShops = async (
     }
 
     const [shops, total] = await Promise.all([
-      prisma.products.findMany({
+      prisma.shops.findMany({
         where: filters,
         skip,
         take: parsedLimit,
         include: {
-          images: true,
-          shop: true,
+          sellers: true,
+          followers: true,
+          products: true,
         },
       }),
       prisma.shops.count({

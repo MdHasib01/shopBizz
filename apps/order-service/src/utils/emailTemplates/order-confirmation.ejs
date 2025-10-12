@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your ShopBizz Order Confirmation</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background-color: #2b8a3e;
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+      }
+      .content {
+        padding: 30px;
+      }
+      .content h2 {
+        color: #2b8a3e;
+        margin-bottom: 10px;
+      }
+      .content p {
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+      .cart-item {
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-between;
+      }
+      .cart-item:last-child {
+        border-bottom: none;
+      }
+      .total {
+        text-align: right;
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-top: 20px;
+      }
+      .cta {
+        text-align: center;
+        margin-top: 30px;
+      }
+      .cta a {
+        background-color: #2b8a3e;
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        font-weight: bold;
+        display: inline-block;
+      }
+      .cta a:hover {
+        background-color: #237031;
+      }
+      .footer {
+        background-color: #f1f1f1;
+        text-align: center;
+        padding: 15px;
+        font-size: 0.9em;
+        color: #666;
+      }
+      .footer a {
+        color: #2b8a3e;
+        text-decoration: none;
+      }
+      @media (max-width: 480px) {
+        .container {
+          width: 95%;
+        }
+        .content {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>Thank You for Your Order, <%= name %>!</h2>
+      </div>
+      <div class="content">
+        <p>
+          We’ve received your order and it’s now being processed. Below is a
+          summary of your purchase:
+        </p>
+
+        <div class="cart">
+          <% cart.forEach(item => { %>
+          <div class="cart-item">
+            <span><%= item.name %> (x<%= item.quantity %>)</span>
+            <span>$<%= item.price.toFixed(2) %></span>
+          </div>
+          <% }) %>
+        </div>
+
+        <div class="total">Total: $<%= totalAmount.toFixed(2) %></div>
+
+        <div class="cta">
+          <a href="<%= trackingUrl %>" target="_blank">Track Your Order</a>
+        </div>
+
+        <p style="margin-top: 25px; font-size: 0.95em; color: #555">
+          You’ll receive another email once your order ships. Thank you for
+          shopping with <strong>ShopBizz</strong>!
+        </p>
+      </div>
+      <div class="footer">
+        <p>
+          Need help? Contact us at
+          <a href="mailto:support@shopbizz.com">support@shopbizz.com</a>
+        </p>
+        <p>
+          &copy; <%= new Date().getFullYear() %> ShopBizz. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

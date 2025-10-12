@@ -399,7 +399,7 @@ export const createOrder = async (
         await sendEmail(
           email,
           "Your ShopBizz Order Confirmation",
-          "Order-confirmation",
+          "order-confirmation",
           {
             name,
             cart,
@@ -408,8 +408,53 @@ export const createOrder = async (
           }
         );
       }
+
+      // Create notifications for sellers
+      const createdShopIds = Object.keys(shopGrouped);
+      const sellerShops = await prisma.shops.findMany({
+        where: {
+          id: {
+            in: createdShopIds,
+          },
+        },
+        select: {
+          id: true,
+          sellerId: true,
+          name: true,
+        },
+      });
+
+      for (const shop of sellerShops) {
+        const firstProduct = shopGrouped[shop.id][0];
+        const productTitle = firstProduct.title || "new item";
+
+        await prisma.notifications.create({
+          data: {
+            title: `New Order for ${shop.name}`,
+            message: `${name} has placed an order for ${productTitle}.`,
+            creatorId: String(userId),
+            receiverId: String(shop.sellerId),
+            redirect_link: `https://shopbizz.com/orders/${sessionId}`,
+          },
+        });
+      }
+
+      // create notification for admin
+      await prisma.notifications.create({
+        data: {
+          title: "New Order Placed",
+          message: `${name} has placed an order.`,
+          creatorId: String(userId),
+          receiverId: "admin",
+          redirect_link: `https://shopbizz.com/orders/${sessionId}`,
+        },
+      });
+
+      await redis.del(sessionKey);
     }
+    return res.status(200).json({ success: true, received: true });
   } catch (error) {
-    next(error);
+    console.error(error);
+    return next(error);
   }
 };

@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import { errorMiddleware } from "@packages/errorHandler/errorMiddleware";
 import router from "./routes/order.route";
+import { createOrder } from "./controllers/order.controller";
 
 const app = express();
 app.use(
@@ -20,7 +21,15 @@ app.use(
     credentials: true,
   })
 );
-
+app.post(
+  "/api/create-order",
+  bodyParser.raw({ type: "application/json" }),
+  (req, res, next) => {
+    (req as any).rawBody = req.body;
+    next();
+  },
+  createOrder
+);
 app.use(express.json({ limit: "100mb" }));
 app.use(cookieParser());
 app.get("/", (req, res) => {
@@ -33,6 +42,7 @@ app.get("/", (req, res) => {
 });
 //Routes
 app.use("/api", router);
+
 app.use(errorMiddleware);
 const port = process.env.PORT || 6004;
 const server = app.listen(port, () => {

@@ -5,6 +5,7 @@
     "types": ["node"],
     "rootDir": "../../",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "lib": ["dom", "dom.iterable", "es2022"],
     "baseUrl": ".",
     "jsx": "preserve",
     "paths": {

@@ -23,6 +23,25 @@ const CartPage = () => {
   const addToCart = useStore((state: any) => state.addToCart);
   const [couponCode, setCouponCode] = React.useState("");
   const [selectedAddressId, setSelectedAddressId] = React.useState("");
+  const createPaymentSession = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.post(
+        "/order/api/create-payment-session",
+        { cart, selectedAddressId, coupon: {} }
+      );
+
+      const sessionId = res.data.sessionId;
+      if (sessionId) {
+        router.push(`/checkout?sessionId=${sessionId}`);
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [loading, setLoading] = React.useState(false);
   const removeFromCart = useStore((state: any) => state.removeFromCart);
   const cart = useStore((state: any) => state.cart);
@@ -302,6 +321,7 @@ const CartPage = () => {
                 </div>
 
                 <button
+                  onClick={createPaymentSession}
                   disabled={loading}
                   className="w-full flex items-center justify-center gap-2 cursor-pointer mt-4 py-3 bg-[#010f1c] text-white hover:bg-[#0989ff] transition-all rounded-lg"
                 >

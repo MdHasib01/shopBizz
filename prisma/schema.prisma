@@ -34,6 +34,7 @@ model users {
    orders        orders[] 
   images      images[]
   shopReviews shopReviews[]
+  
 }
 
 model shopReviews {
@@ -210,16 +211,13 @@ enum orderStatus {
 model orders {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   orderNumber     String   @unique
-
-  // who placed the order
+ 
   orderBy         String   @db.ObjectId
   user            users    @relation(fields: [orderBy], references: [id])
-
-  // 👇 add these so your groupBy works
+  
   shopId          String   @db.ObjectId
   shop            shops    @relation(fields: [shopId], references: [id])
 
-  // 👇 totals (so you can _sum.total)
   subtotal        Float    @default(0)
   shipping        Float    @default(0)
   discount        Float    @default(0)
@@ -236,6 +234,21 @@ model orders {
   updatedAt       DateTime  @updatedAt
 
   @@index([orderBy])
-  @@index([shopId])  // 👈 important for your groupBy + lookup
+  @@index([shopId])  
   @@index([status])
+}
+
+
+model address {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String  @db.ObjectId
+  label      String  
+  name       String  
+  street     String
+  city       String
+  zip        String
+  country    String
+  isDefault  Boolean @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

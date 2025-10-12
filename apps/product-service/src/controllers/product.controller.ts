@@ -397,6 +397,62 @@ export const getAllProducts = async (
     next(error);
   }
 };
+export const getAllEvents = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    const baseFilter = {
+      AND: [
+        {
+          starting_date: { not: null },
+        },
+        { ending_date: { not: null } },
+      ],
+    };
+
+    const [events, total, top10BySales] = await Promise.all([
+      prisma.products.findMany({
+        where: baseFilter,
+        skip,
+        take: limit,
+        include: {
+          images: true,
+          shop: true,
+        },
+      }),
+      prisma.products.count({
+        where: baseFilter,
+      }),
+      prisma.products.findMany({
+        where: baseFilter,
+        take: 10,
+        include: {
+          images: true,
+          shop: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      events,
+      total,
+      top10BySales,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error("Error fetching Events:", error);
+    next(error);
+  }
+};
 
 export const getProductDetails = async (
   req: any,

@@ -1,9 +1,12 @@
 import express, { Router } from "express";
 import {
+  addUserAddress,
   createstripeConnectLink,
+  deleteUserAddress,
   forgotPassword,
   getSeller,
   getUser,
+  getUserAddresses,
   login,
   loginSeller,
   refreshToken,
@@ -22,6 +25,7 @@ const router: Router = express.Router();
 router.post("/register", userRegistration);
 router.post("/verify-otp", verifyUser);
 router.post("/login", login);
+
 router.post("/refresh-token-user", refreshToken);
 router.get("/loggedin-user", isAuthenticated, getUser);
 router.post("/forgot-password", forgotPassword);
@@ -33,5 +37,8 @@ router.post("/create-shop", createShop);
 router.post("/create-stripe-link", createstripeConnectLink);
 router.post("/login-seller", loginSeller);
 router.get("/logged-in-seller", isAuthenticated, isSeller, getSeller);
+router.get("/shipping-addresses", isAuthenticated, getUserAddresses);
+router.post("/add-address", isAuthenticated, addUserAddress);
+router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress);
 
 export default router;

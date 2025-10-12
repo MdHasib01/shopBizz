@@ -1,13 +1,20 @@
 import { ValidationError } from "@packages/errorHandler";
 import prisma from "@packages/libs/prisma";
 import redis from "@packages/libs/redis";
+import { Prisma } from "@prisma/client";
 import { NextFunction, Response, Request } from "express";
 import Stripe from "stripe";
 import crypto from "crypto";
+import { sendEmail } from "../utils/sendMail";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-05-28.basil",
 });
+
+const generateOrderNumber = () =>
+  `ORD-${Date.now()}-${Math.floor(Math.random() * 1_000_000)
+    .toString()
+    .padStart(6, "0")}`;
 
 // create payment intent
 export const createPaymentIntent = async (
@@ -215,6 +222,13 @@ export const createOrder = async (
       const sessionId = paymentIntent.metadata.sessionId;
       const userId = paymentIntent.metadata.userId;
 
+      if (!userId) {
+        console.warn(
+          `Payment intent ${paymentIntent.id} is missing user metadata. Skipping order creation.`
+        );
+        return res.status(200).send("Missing user context");
+      }
+
       const sessionKey = `payment-session:${sessionId}`;
       const sessionData = await redis.get(sessionKey);
 
@@ -225,11 +239,12 @@ export const createOrder = async (
           .send("No session found, skipping order creation");
       }
 
-      const { cart, totalAmount, shippingAddressId, coupon } =
-        JSON.parse(sessionData);
+      const { cart, shippingAddressId, coupon } = JSON.parse(sessionData);
+
+      const normalizedUserId = String(userId);
 
       const user = await prisma.users.findUnique({
-        where: { id: userId },
+        where: { id: normalizedUserId },
         select: { name: true, email: true },
       });
 
@@ -244,10 +259,12 @@ export const createOrder = async (
 
       for (const shopId of Object.keys(shopGrouped)) {
         const orderItems = shopGrouped[shopId];
-        let orderTotal = orderItems.reduce(
+        const orderSubtotal = orderItems.reduce(
           (total: number, item: any) => total + item.quantity * item.sale_price,
           0
         );
+        let discountValue = 0;
+        let orderTotal = orderSubtotal;
         // Apply discount if applicable
         if (
           coupon &&
@@ -266,37 +283,47 @@ export const createOrder = async (
                   100
                 : coupon.discountAmount;
 
-            orderTotal -= discount;
+            discountValue = discount;
+            orderTotal = Math.max(orderSubtotal - discount, 0);
           }
         }
 
         // Create order
         await prisma.orders.create({
           data: {
-            userId,
-            shopId,
+            userId: normalizedUserId,
+            orderBy: normalizedUserId,
+            shopId: String(shopId),
+            orderNumber: generateOrderNumber(),
+            subtotal: orderSubtotal,
+            discount: discountValue,
             total: orderTotal,
+            currency: paymentIntent.currency
+              ? paymentIntent.currency.toUpperCase()
+              : "USD",
             status: "Paid",
-            shippingAddressId: shippingAddressId || null,
+            shippingAddressId: shippingAddressId
+              ? String(shippingAddressId)
+              : null,
             couponCode: coupon?.code || null,
-            discountAmount: coupon?.discountAmount || 0,
+            discountAmount: discountValue,
             items: {
               create: orderItems.map((item: any) => ({
-                productId: item.id,
-                quantity: item.quantity,
-                price: item.sale_price,
-                selectedOptions: item.selectedOptions,
+                productId: String(item.id),
+                quantity: Number(item.quantity),
+                price: Number(item.sale_price),
+                selectedOptions: item.selectedOptions ?? undefined,
               })),
             },
           },
         });
         // Update product stock and analytics after successful order creation
         for (const item of orderItems) {
-          const productId = item.id;
-          const quantity = item.quantity;
-          const itemShopId = item.shopId;
+          const productId = String(item.id);
+          const quantity = Number(item.quantity);
+          const itemShopId = String(item.shopId);
 
-          // 1️⃣ Update product stock and sales
+          //  Update product stock and sales
           await prisma.products.update({
             where: { id: productId },
             data: {
@@ -305,7 +332,7 @@ export const createOrder = async (
             },
           });
 
-          // 2️⃣ Upsert product analytics
+          //  Upsert product analytics
           await prisma.productAnalytics.upsert({
             where: { productId },
             create: {
@@ -320,40 +347,66 @@ export const createOrder = async (
             },
           });
 
-          // 3️⃣ Update user analytics (record purchase action)
+          //  Update user analytics (record purchase action)
           const existingAnalytics = await prisma.userAnalytics.findUnique({
-            where: { userId },
+            where: { userId: normalizedUserId },
           });
 
-          const newAction = {
+          const newAction: Prisma.InputJsonValue = {
             productId,
             shopId: itemShopId,
             action: "purchase",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
           };
 
           if (existingAnalytics) {
-            const currentActions = Array.isArray(existingAnalytics.actions)
-              ? existingAnalytics.actions
+            const currentActions: Prisma.JsonValue[] = Array.isArray(
+              existingAnalytics.actions
+            )
+              ? (existingAnalytics.actions as Prisma.JsonValue[])
               : [];
 
+            const sanitizedActions = currentActions.filter(
+              (action): action is Exclude<Prisma.JsonValue, null> =>
+                action !== null
+            );
+
+            const updatedActions: Prisma.InputJsonValue[] = [
+              ...sanitizedActions,
+              newAction,
+            ];
+
             await prisma.userAnalytics.update({
-              where: { userId },
+              where: { userId: normalizedUserId },
               data: {
                 lastVisited: new Date(),
-                actions: [...currentActions, newAction],
+                actions: {
+                  set: updatedActions,
+                },
               },
             });
           } else {
             await prisma.userAnalytics.create({
               data: {
-                userId,
+                userId: normalizedUserId,
                 lastVisited: new Date(),
                 actions: [newAction],
               },
             });
           }
         }
+
+        await sendEmail(
+          email,
+          "Your ShopBizz Order Confirmation",
+          "Order-confirmation",
+          {
+            name,
+            cart,
+            totalAmount: coupon ? orderTotal - discountValue : orderTotal,
+            trackingUrl: `https://shopbizz.com/orders/${sessionId}`,
+          }
+        );
       }
     }
   } catch (error) {

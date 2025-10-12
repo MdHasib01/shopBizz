@@ -147,6 +147,8 @@ model products {
   regular_price         Float
   ratings               Float @default(5)
   warranty              String?
+  orderItems       orderItems[] 
+  totalSales            Int   @default(0)
   custom_specifications Json?
   custom_properties     Json
   isDeleted             Boolean? @default(false)
@@ -208,16 +210,40 @@ enum orderStatus {
   Refunded
 }
 
+model orderItems {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  orderId         String    @db.ObjectId
+  productId       String    @db.ObjectId
+
+  // relations
+  order           orders    @relation(fields: [orderId], references: [id])
+  product         products  @relation(fields: [productId], references: [id])
+
+  // line item data
+  quantity        Int
+  price           Float
+  selectedOptions Json?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+}
+
 model orders {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String       @db.ObjectId
   orderNumber     String   @unique
- 
+  shippingAddressId String? @db.ObjectId
+   shippingAddress   address?    @relation(fields: [shippingAddressId], references: [id])
   orderBy         String   @db.ObjectId
   user            users    @relation(fields: [orderBy], references: [id])
-  
+  discountAmount  Float?
+  items             orderItems[]
   shopId          String   @db.ObjectId
   shop            shops    @relation(fields: [shopId], references: [id])
-
+  couponCode      String?
   subtotal        Float    @default(0)
   shipping        Float    @default(0)
   discount        Float    @default(0)
@@ -226,13 +252,16 @@ model orders {
   currency        String   @default("BDT")
 
   status          orderStatus @default(Pending)
-  shippingAddress Json
+
   billingAddress  Json?
   notes           String?
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+
+  @@index([shippingAddressId])
+  @@index([userId])  
   @@index([orderBy])
   @@index([shopId])  
   @@index([status])
@@ -248,6 +277,7 @@ model address {
   city       String
   zip        String
   country    String
+  orders     orders[]
   isDefault  Boolean @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

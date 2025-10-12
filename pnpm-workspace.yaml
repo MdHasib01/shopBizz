@@ -2,3 +2,4 @@ packages:
   - "apps/*"
   - "api-getway"
   - "api-getway-e2e"
+  - "order-service"

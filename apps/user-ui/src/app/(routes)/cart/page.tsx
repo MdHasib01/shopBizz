@@ -3,11 +3,13 @@ import useDeviceTracking from "@/hooks/useDeviceTracking";
 import useLocationTracking from "@/hooks/useLocationTracking";
 import { useUser } from "@/hooks/useUser";
 import { useStore } from "@/store";
+import axiosInstance from "@/utils/axiosInstance";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2, ShoppingCartIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 import { toast } from "sonner";
 
 const CartPage = () => {
@@ -49,6 +51,25 @@ const CartPage = () => {
       ),
     }));
   };
+
+  // Get Address
+  const { data: addresses = [] } = useQuery<any[], Error>({
+    queryKey: ["shipping-address"],
+    queryFn: async () => {
+      const res = await axiosInstance("/api/shipping-address");
+      return res.data.addreses;
+    },
+  });
+
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) {
+      const defaultAddr = addresses.find((address) => address.isDefault);
+      if (defaultAddr) {
+        setSelectedAddressId(defaultAddr.id);
+      }
+    }
+  }, [addresses, selectedAddressId]);
+
   const couponCodeHandler = () => {};
   return (
     <div className="w-full bg-white">
@@ -221,7 +242,7 @@ const CartPage = () => {
                     value={couponCode}
                     placeholder="Entyer coupon code"
                     className="w-full border border-gray-300 rounded-md p-2 mr-2 "
-                    onChange={(e) => setCouponCode(e.target.value)}
+                    onChange={(e: any) => setCouponCode(e.target.value)}
                   />
                   <button
                     className="bg-[#010f1c] text-white py-2 px-4 rounded-md"
@@ -237,13 +258,28 @@ const CartPage = () => {
                   <h4 className="mb-[7px] font-medium text-[15px]">
                     Select Shipping Address
                   </h4>
-                  <select
-                    className="w-full border border-gray-300 rounded-md p-2  "
-                    value={selectedAddressId}
-                    onChange={(e) => setSelectedAddressId(e.target.value)}
-                  >
-                    <option value="">Home - New York - usa</option>
-                  </select>
+                  {addresses.length != 0 && (
+                    <select
+                      className="w-full border border-gray-300 rounded-md p-2  "
+                      value={selectedAddressId}
+                      onChange={(e: any) =>
+                        setSelectedAddressId(e.target.value)
+                      }
+                    >
+                      {addresses.map((address: any) => (
+                        <option key={address.id} value={address.id}>
+                          {address.label} - {address.city}, {address.country}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {addresses.length === 0 && (
+                    <p className="text-sm text-slate-800">
+                      Please add shipping address from profile to create an
+                      order
+                    </p>
+                  )}
                 </div>
                 <hr className="my-4 text-slate-200" />
                 <div className="mb-4">
@@ -253,7 +289,7 @@ const CartPage = () => {
                   <select
                     className="w-full border border-gray-300 rounded-md p-2  "
                     value={selectedAddressId}
-                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                    onChange={(e: any) => setSelectedAddressId(e.target.value)}
                   >
                     <option value="credit_card">Online Payment</option>
                     <option value="cash_on_delivery">Cash On Delivery</option>

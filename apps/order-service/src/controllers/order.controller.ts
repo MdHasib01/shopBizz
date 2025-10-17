@@ -23,6 +23,11 @@ export const createPaymentIntent = async (
   next: NextFunction
 ) => {
   const { amount, sellerStripeAccountId, sessionId } = req.body;
+
+  if (!sellerStripeAccountId) {
+    return next(new ValidationError("Missing seller Stripe account"));
+  }
+
   const customerAmount = Math.round(amount * 100);
   const platformFee = Math.round(customerAmount * 0.1);
   try {
@@ -34,7 +39,6 @@ export const createPaymentIntent = async (
 
       transfer_data: {
         destination: sellerStripeAccountId,
-        amount: platformFee,
       },
       metadata: {
         sessionId,

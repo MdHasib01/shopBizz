@@ -36,7 +36,8 @@ export const createPaymentIntent = async (
       currency: "usd",
       payment_method_types: ["card"],
       application_fee_amount: platformFee,
-
+      // Ensure cross-border charges settle in the seller's account instead of the platform
+      on_behalf_of: sellerStripeAccountId,
       transfer_data: {
         destination: sellerStripeAccountId,
       },

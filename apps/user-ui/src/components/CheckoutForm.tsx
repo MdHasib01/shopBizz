@@ -3,10 +3,8 @@ import {
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
-import { stat } from "fs";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import React, { useState } from "react";
-import { set } from "react-hook-form";
 
 const CheckoutForm = ({
   clientSecret,
@@ -26,10 +24,27 @@ const CheckoutForm = ({
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const total = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  const safeNumber = (value: any) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
+  };
+
+  const resolveItemPrice = (item: any) =>
+    safeNumber(item?.sale_price ?? item?.price ?? item?.totalPrice);
+  const resolveItemQuantity = (item: any) =>
+    Math.max(safeNumber(item?.quantity), 0);
+  const resolveItemName = (item: any, index: number) =>
+    item?.title ?? item?.name ?? item?.productName ?? `Item ${index + 1}`;
+
+  const discountAmount = safeNumber(coupon?.discountAmount);
+
+  const total = cartItems.reduce((acc, item) => {
+    const linePrice = resolveItemPrice(item) * resolveItemQuantity(item);
+    return acc + linePrice;
+  }, 0);
+
+  const orderTotal = Math.max(total - discountAmount, 0);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!stripe || !elements) {
@@ -76,25 +91,30 @@ const CheckoutForm = ({
           {cartItems.map((item, idx) => (
             <div key={idx} className="flex justify-between text-sm pb-1">
               <span>
-                {item.quantity} x {item.name}
+                {resolveItemQuantity(item)} x {resolveItemName(item, idx)}
               </span>
-              <span>${(item.price * item.quantity).toFixed(2)}</span>
+              <span>
+                $
+                {(
+                  resolveItemPrice(item) * resolveItemQuantity(item)
+                ).toFixed(2)}
+              </span>
             </div>
           ))}
 
           <div className="flex justify-between font-semibold pt-2 border-t border-t-gray-500">
-            {!!coupon?.discountAmount && (
+            {discountAmount > 0 && (
               <>
                 <span>Discount</span>
                 <span className="text-green-600">
-                  -${(coupon?.discountAmount).toFixed(2)}
+                  -${discountAmount.toFixed(2)}
                 </span>
               </>
             )}
           </div>
           <div className="flex justify-between font-semibold mt-2">
             <span>Total</span>
-            <span>${(total - (coupon?.discountAmount || 0)).toFixed(2)}</span>
+            <span>${orderTotal.toFixed(2)}</span>
           </div>
         </div>
         <PaymentElement />

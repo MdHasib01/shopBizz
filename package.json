@@ -37,7 +37,7 @@
     "react-hook-form": "^7.57.0",
     "react-icons": "^5.5.0",
     "react-image-magnify": "^2.7.4",
-    "stripe": "^18.2.1",
+    "stripe": "^18.5.0",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "ua-parser-js": "^2.0.4",

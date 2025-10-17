@@ -6,6 +6,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const CheckoutForm = ({
@@ -21,6 +22,7 @@ const CheckoutForm = ({
 }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -81,10 +83,18 @@ const CheckoutForm = ({
     if (result.error) {
       setStatus("failed");
       setError(result.error.message || "Something went wrong");
-    } else {
-      setStatus("success");
+      setLoading(false);
+      return;
     }
+
+    setStatus("success");
     setLoading(false);
+
+    const targetSessionId = sessionId
+      ? `?sessionId=${encodeURIComponent(sessionId)}`
+      : "";
+
+    router.push(`/payment-success${targetSessionId}`);
   };
 
   if (!clientSecret) {

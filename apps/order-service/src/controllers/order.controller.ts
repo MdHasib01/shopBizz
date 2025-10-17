@@ -401,6 +401,15 @@ export const createOrder = async (
           }
         }
 
+        console.log(
+          "[OrderService] Preparing to send order confirmation email",
+          {
+            to: email,
+            sessionId,
+            template: "order-confirmation",
+          }
+        );
+
         await sendEmail(
           email,
           "Your ShopBizz Order Confirmation",

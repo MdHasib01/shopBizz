@@ -8,7 +8,7 @@ import crypto from "crypto";
 import { sendEmail } from "../utils/sendMail";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-05-28.basil",
+  apiVersion: "2025-05-28.basil" as any,
 });
 
 const generateOrderNumber = () =>
@@ -33,7 +33,7 @@ export const createPaymentIntent = async (
       application_fee_amount: platformFee,
 
       transfer_data: {
-        destination: sellerStripeAccountId || "acct_1RZIdSQOr9v9dYw5",
+        destination: sellerStripeAccountId,
         amount: platformFee,
       },
       metadata: {

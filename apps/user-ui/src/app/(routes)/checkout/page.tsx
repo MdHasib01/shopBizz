@@ -51,7 +51,7 @@ const page = () => {
         setCoupon(coupon ?? null);
         const sellerStripeAccountId = sellers[0].stripeAccountId;
 
-        // ✅ Create payment intent
+        //  Create payment intent
         const intentRes = await axiosInstance.post(
           `/order/api/create-payment-intent`,
           {

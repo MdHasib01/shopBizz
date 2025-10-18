@@ -9,7 +9,7 @@ import { Loader2, ShoppingCartIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const CartPage = () => {
@@ -23,12 +23,66 @@ const CartPage = () => {
   const addToCart = useStore((state: any) => state.addToCart);
   const [couponCode, setCouponCode] = React.useState("");
   const [selectedAddressId, setSelectedAddressId] = React.useState("");
+
+  const [error, setError] = useState("");
+  const [storedCouponCode, setStoredCouponCode] = useState("");
+
+  const couponCodeHandler = async (): Promise<void> => {
+    setError("");
+
+    if (!couponCode.trim()) {
+      setError("Coupon code is required!");
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.put("/order/api/verify-coupon", {
+        cart,
+        couponCode: couponCode.trim(),
+      });
+
+      if (res.data.valid) {
+        setStoredCouponCode(couponCode.trim());
+        setDiscountAmount(parseFloat(res.data.discountAmount));
+        setDiscoundPercent(res.data.discount);
+        setDiscoundedProductId(res.data.discountedProductId);
+        setCouponCode("");
+      } else {
+        setDiscountAmount(0);
+        setDiscoundPercent(0);
+        setDiscoundedProductId("");
+        setError(res.data.message || "Coupon not valid for any items in cart.");
+      }
+    } catch (error: any) {
+      setDiscountAmount(0);
+      setDiscoundPercent(0);
+      setDiscoundedProductId("");
+      setError(
+        error?.response?.data?.message ||
+          "Failed to apply coupon. Please try again."
+      );
+    }
+  };
+
   const createPaymentSession = async () => {
+    if (addresses.length === 0) {
+      toast.error("Please add an address");
+      return;
+    }
     setLoading(true);
     try {
       const res = await axiosInstance.post(
         "/order/api/create-payment-session",
-        { cart, selectedAddressId, coupon: {} }
+        {
+          cart,
+          selectedAddressId,
+          coupon: {
+            code: storedCouponCode,
+            discountAmount,
+            discoundPercent,
+            discoundedProductId,
+          },
+        }
       );
 
       const sessionId = res.data.sessionId;
@@ -75,8 +129,8 @@ const CartPage = () => {
   const { data: addresses = [] } = useQuery<any[], Error>({
     queryKey: ["shipping-address"],
     queryFn: async () => {
-      const res = await axiosInstance("/api/shipping-address");
-      return res.data.addreses;
+      const res = await axiosInstance.get("/api/shipping-addresses");
+      return res.data.addresses;
     },
   });
 
@@ -89,7 +143,6 @@ const CartPage = () => {
     }
   }, [addresses, selectedAddressId]);
 
-  const couponCodeHandler = () => {};
   return (
     <div className="w-full bg-white">
       <div className="w-[95%] md:w[80%] min-h-screen mx-auto container">
@@ -270,8 +323,8 @@ const CartPage = () => {
                     {" "}
                     Apply
                   </button>
-                  {/* {error && <p className="text-red-500 mt-2">{error}</p>} */}
                 </div>
+                {error && <p className="text-red-500 mt-2">{error}</p>}
                 <hr className="my-4 text-slate-200" />
                 <div className="mb-4">
                   <h4 className="mb-[7px] font-medium text-[15px]">

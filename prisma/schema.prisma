@@ -30,8 +30,8 @@ model users {
   following   String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-   shopFollows   shopFollowers[] 
-   orders        orders[] 
+  shopFollows   shopFollowers[] 
+  orders        orders[] 
   images      images[]
   shopReviews shopReviews[]
   
@@ -251,7 +251,7 @@ model orders {
   total           Float    @default(0)
   currency        String   @default("BDT")
 
-  status          orderStatus @default(Pending)
+  status          String @default("Pending")
 
   billingAddress  Json?
   notes           String?

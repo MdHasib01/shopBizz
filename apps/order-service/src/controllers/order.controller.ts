@@ -637,25 +637,45 @@ export const verifyCouponCode = async (
   next: NextFunction
 ) => {
   try {
-    const { couponCode, cart } = req.body;
+    const { couponCode, cart } = req.body ?? {};
 
-    // Validate request input
-    if (!couponCode || !cart || cart.length === 0) {
-      return next(new Error("Coupon code and cart are required!"));
+    // Basic input validation
+    if (typeof couponCode !== "string" || !couponCode.trim()) {
+      return res.status(400).json({
+        message: "couponCode is required and must be a non-empty string.",
+      });
+    }
+    if (!Array.isArray(cart)) {
+      return res
+        .status(400)
+        .json({ message: "cart is required and must be an array." });
+    }
+    if (cart.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "cart is empty; nothing to apply the coupon to." });
     }
 
-    // Fetch discount details from database
+    const normalizedCode = couponCode.trim();
+
+    // Look up the coupon
     const discount = await prisma.discount_codes.findUnique({
-      where: { discountCode: couponCode.trim() },
+      where: { discountCode: normalizedCode }, // ensure discountCode is UNIQUE in your schema
     });
 
     if (!discount) {
-      return next(new Error("Coupon code isn't valid!"));
+      return res
+        .status(404)
+        .json({ message: "Invalid or unknown coupon code." });
     }
 
-    // Check if coupon applies to any product in the cart
-    const matchingProduct = cart.find((item: any) =>
-      item.discount_codes?.some((d: any) => d.id === discount.id)
+    // Find a matching product in the cart
+    const matchingProduct = cart.find(
+      (item: any) =>
+        Array.isArray(item?.discount_codes) &&
+        item.discount_codes?.some((d: any) => {
+          return d === discount.id;
+        })
     );
 
     if (!matchingProduct) {
@@ -663,33 +683,63 @@ export const verifyCouponCode = async (
         valid: false,
         discountAmount: 0,
         discount: 0,
-        message: "No matching product found in cart for this coupon.",
+        message: "No matching product in the cart for this coupon.",
       });
     }
 
     // Calculate discount
-    let discountAmount = 0;
-    const price = matchingProduct.sale_price;
-
-    if (discount.discountType === "percentage") {
-      discountAmount = (price * discount.discountValue) / 100;
-    } else if (discount.discountType === "flat") {
-      discountAmount = discount.discountValue;
+    const price = Number(
+      matchingProduct.sale_price ?? matchingProduct.price ?? 0
+    );
+    if (!Number.isFinite(price) || price <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Matching product has no valid price to discount." });
     }
 
-    // Prevent discount from exceeding price
-    discountAmount = Math.min(discountAmount, price);
+    let discountAmount = 0;
+    if (discount.discountType === "percentage") {
+      discountAmount = (price * Number(discount.discountValue)) / 100;
+    } else if (discount.discountType === "flat") {
+      discountAmount = Number(discount.discountValue);
+    } else {
+      return res.status(400).json({ message: "Unsupported discount type." });
+    }
 
-    // Return response with applied discount details
+    discountAmount = Math.min(Math.max(discountAmount, 0), price);
+
     return res.status(200).json({
       valid: true,
       discount: discount.discountValue,
-      discountAmount: discountAmount.toFixed(2),
+      discountAmount: Number(discountAmount.toFixed(2)),
       discountedProductId: matchingProduct.id,
       discountType: discount.discountType,
       message: "Discount applied to 1 eligible product.",
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// get user orders
+export const getUserOrders = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const orders = await prisma.orders.findMany({
+      where: { userId: req.user?.id },
+      include: {
+        items: true,
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return res.status(200).json({ orders });
+  } catch (error) {
+    return next(error);
   }
 };

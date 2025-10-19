@@ -1,11 +1,13 @@
 "use client";
+import ChangePassword from "@/components/ChangePassword";
 import NavItem from "@/components/nav.item";
+import OrdersTable from "@/components/OrdersTable";
 import QuickActions from "@/components/quick.action";
 import ShippingAddressSection from "@/components/ShippingAddress";
 import StatCard from "@/components/stat.card";
 import { profileFallbackImage } from "@/configs/fallback.image";
 import { useUser } from "@/hooks/useUser";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import {
   Loader2,
@@ -39,6 +41,21 @@ const page = () => {
   const queryTab = searchParams.get("active") || "profile";
   const [activeTab, setActiveTab] = useState(queryTab);
 
+  const { data: orders = [] } = useQuery({
+    queryKey: ["user-orders"],
+    queryFn: async () => {
+      const res = await axios.get(`/order/api/get-user-orders`);
+      return res.data.orders;
+    },
+  });
+  const totalOrders = orders.length;
+  const processingOrders = orders.filter(
+    (o: any) =>
+      o?.deliveryStatus !== "Delivered" && o?.deliveryStatus !== "Cancelled"
+  ).length;
+  const completedOrders = orders.filter(
+    (o: any) => o?.deliveryStatus === "Delivered"
+  ).length;
   useEffect(() => {
     if (activeTab != queryTab) {
       const newParams = new URLSearchParams(searchParams);
@@ -72,9 +89,17 @@ const page = () => {
 
         {/* Profile Overview  */}
         <div className="grid gird-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 ">
-          <StatCard title="Total Orders" count={10} Icon={Clock} />
-          <StatCard title="Processing Orders" count={4} Icon={Truck} />
-          <StatCard title="Completed Orders" count={5} Icon={CheckCircle} />
+          <StatCard title="Total Orders" count={totalOrders} Icon={Clock} />
+          <StatCard
+            title="Processing Orders"
+            count={processingOrders}
+            Icon={Truck}
+          />
+          <StatCard
+            title="Completed Orders"
+            count={completedOrders}
+            Icon={CheckCircle}
+          />
         </div>
 
         {/* sidebar and content layout  */}
@@ -157,8 +182,14 @@ const page = () => {
                   <p className="text-gray-500">Earned Points: 0</p>
                 </div>
               </div>
+            ) : activeTab === "Shipping Address" ? (
+              <ShippingAddressSection />
+            ) : activeTab === "My Orders" ? (
+              <OrdersTable />
+            ) : activeTab === "Change Password" ? (
+              <ChangePassword />
             ) : (
-              activeTab === "Shipping Address" && <ShippingAddressSection />
+              <div></div>
             )}
           </div>
 

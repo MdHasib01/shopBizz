@@ -443,6 +443,66 @@ export const getSeller = async (
   }
 };
 
+// Change Password
+export const changePassword = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    // Validation checks
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return next(new ValidationError("All fields are required"));
+    }
+
+    if (newPassword !== confirmPassword) {
+      return next(new ValidationError("New passwords do not match"));
+    }
+
+    if (currentPassword === newPassword) {
+      return next(
+        new ValidationError(
+          "New password cannot be the same as the current password"
+        )
+      );
+    }
+
+    // Find user
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.password) {
+      throw new ValidationError("User not found or password not set");
+    }
+
+    // Compare current password
+    const isPasswordCorrect = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isPasswordCorrect) {
+      throw new ValidationError("Current password is incorrect");
+    }
+
+    // Hash new password and update
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await prisma.users.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const logout = async (
   req: Request,
   res: Response,

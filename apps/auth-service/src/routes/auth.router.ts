@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import {
   addUserAddress,
+  changePassword,
   createstripeConnectLink,
   deleteUserAddress,
   forgotPassword,
@@ -31,6 +32,7 @@ router.get("/loggedin-user", isAuthenticated, getUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-forgot-password", verifyUserForgotPasswordOtp);
 router.post("/reset-password", resetPassword);
+router.post("/change-password", changePassword);
 router.post("/seller-registration", registerSeller);
 router.post("/verify-seller", verifySeller);
 router.post("/create-shop", createShop);

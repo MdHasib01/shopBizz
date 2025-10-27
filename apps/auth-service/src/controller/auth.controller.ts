@@ -126,6 +126,8 @@ export const login = async (
     }
     res.clearCookie("seller-access-token");
     res.clearCookie("seller-refresh-token");
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
     // Generate JWT token
     const accessToken = jwt.sign(
       {
@@ -152,7 +154,7 @@ export const login = async (
 
     // store refresh token on http cecret cookie
     setCookies(res, "refreshToken", refreshToken);
-    setCookies(res, "accessToken", refreshToken);
+    setCookies(res, "accessToken", accessToken);
 
     return res.status(200).json({
       success: true,
@@ -210,6 +212,10 @@ export const loginAdmin = async (
 
     res.clearCookie("seller-access-token");
     res.clearCookie("seller-refresh-token");
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
     const accessToken = jwt.sign(
       {
         id: user.id,
@@ -233,8 +239,8 @@ export const loginAdmin = async (
       }
     );
 
-    setCookies(res, "refresh_token", refreshToken);
-    setCookies(res, "access_token", accessToken);
+    setCookies(res, "refreshToken", refreshToken);
+    setCookies(res, "accessToken", accessToken);
 
     res.status(200).json({
       message: "Login successful!",
@@ -639,6 +645,8 @@ export const logout = async (
   try {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
     res.status(200).json({ message: "Logout successful!" });
   } catch (error) {
     next(error);

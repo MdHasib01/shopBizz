@@ -1,53 +1,37 @@
 {
   "extends": "../../tsconfig.base.json",
+  "files": [],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+    "../../packages/**/*.ts",
+    "../../packages/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ],
   "compilerOptions": {
-    "jsx": "preserve",
-    "noEmit": true,
-    "emitDeclarationOnly": false,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
     "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
     "incremental": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "jsx": "preserve",
     "plugins": [
       {
         "name": "next"
       }
     ],
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "baseUrl": "../../",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "outDir": "dist",
-    "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+      "@/*": ["apps/admin-ui/src/*"],
+      "@components/*": ["packages/components/*"],
+      "@packages/*": ["packages/*"]
+    }
   },
-  "include": [
-    "../../apps/admin-ui/.next/types/**/*.ts",
-    "../../dist/apps/admin-ui/.next/types/**/*.ts",
-    "next-env.d.ts",
-    "src/**/*.js",
-    "src/**/*.jsx",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "out-tsc",
-    "dist",
-    "node_modules",
-    "jest.config.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.ts",
-    ".next"
-  ]
+  "exclude": ["node_modules"]
 }

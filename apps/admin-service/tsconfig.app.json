@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/admin-service",
+    "types": ["node", "express"],
+    "rootDir": "../../",
+    "baseUrl": "../../",
+    "paths": {
+      "@packages/*": ["packages/*"]
+    },
+    "tsBuildInfoFile": "out-tsc/admin-service/tsconfig.app.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts", "../../packages/**/*.ts"],
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "jest.config.ts",
+    "webpack.config.js",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts"
+  ]
+}

@@ -26,10 +26,27 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
     let account;
 
     if (decoded.role === "user") {
-      account = await prisma.users.findUnique({
+      const userAccount = await prisma.users.findUnique({
         where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          password: true,
+          following: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
-      req.user = account!;
+
+      if (!userAccount) {
+        return res
+          .status(401)
+          .json({ error: "Unauthorized! Account not found" });
+      }
+
+      account = userAccount;
+      req.user = { ...userAccount, role: decoded.role };
     } else {
       account = await prisma.sellers.findUnique({
         where: { id: decoded.id },

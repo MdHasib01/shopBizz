@@ -32,7 +32,10 @@ export const userRegistration = async (
     validateRegistrationData(req.body, "user");
     const { email, name } = req.body;
 
-    const existingUser = await prisma.users.findUnique({ where: { email } });
+    const existingUser = await prisma.users.findUnique({
+      where: { email },
+      select: { id: true },
+    });
     if (existingUser) {
       throw new BadRequestError("User already exists with this email");
     }
@@ -59,7 +62,10 @@ export const verifyUser = async (
       throw new BadRequestError("Missing required fields");
     }
 
-    const existingUser = await prisma.users.findUnique({ where: { email } });
+    const existingUser = await prisma.users.findUnique({
+      where: { email },
+      select: { id: true },
+    });
     if (existingUser) {
       throw new BadRequestError("User already exists with this email");
     }
@@ -99,7 +105,15 @@ export const login = async (
       throw new BadRequestError("Missing required fields");
     }
 
-    const user = await prisma.users.findUnique({ where: { email } });
+    const user = await prisma.users.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+      },
+    });
 
     if (!user) {
       throw new BadRequestError("User not found");
@@ -169,6 +183,12 @@ export const loginAdmin = async (
 
     const user = await prisma.users.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+      },
     });
 
     if (!user) return next(new ValidationError("User doesn't exist!"));
@@ -178,9 +198,14 @@ export const loginAdmin = async (
     if (!isMatch) {
       return next(new ValidationError("Invalid email or password"));
     }
-    const isAdmin = user.role === "admin";
+    const adminAccount = await prisma.users.findFirst({
+      where: { id: user.id, role: "admin" },
+      select: { id: true },
+    });
 
-    if (!isAdmin) return next(new ValidationError("You are not an admin"));
+    if (!adminAccount) {
+      return next(new ValidationError("You are not an admin"));
+    }
 
     res.clearCookie("seller-access-token");
     res.clearCookie("seller-refresh-token");
@@ -256,7 +281,13 @@ export const resetPassword = async (
     if (!email || !newPassword) {
       throw new ValidationError("Email and password are required! ");
     }
-    const user = await prisma.users.findUnique({ where: { email } });
+    const user = await prisma.users.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
     if (!user) {
       throw new ValidationError("User Not fould!");
     }
@@ -307,7 +338,14 @@ export const refreshToken = async (
     }
     let account;
     if (decoded.role === "user") {
-      account = await prisma.users.findUnique({ where: { id: decoded.id } });
+      account = await prisma.users.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      });
     } else if (decoded.role === "seller") {
       account = await prisma.sellers.findUnique({
         where: { id: decoded.id },
@@ -541,6 +579,10 @@ export const changePassword = async (
     // Find user
     const user = await prisma.users.findUnique({
       where: { id: userId },
+      select: {
+        id: true,
+        password: true,
+      },
     });
 
     if (!user || !user.password) {

@@ -187,6 +187,7 @@ export const loginAdmin = async (
         id: true,
         email: true,
         name: true,
+        role: true,
         password: true,
       },
     });
@@ -226,7 +227,7 @@ export const loginAdmin = async (
         email: user.email,
         role: "admin",
       },
-      process.env.ACCESS_TOKEN_SECRET! as string,
+      process.env.REFRESH_TOKEN_SECRET! as string,
       {
         expiresIn: "7d",
       }
@@ -241,6 +242,7 @@ export const loginAdmin = async (
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -337,7 +339,7 @@ export const refreshToken = async (
       throw new JsonWebTokenError("Invalid refresh token");
     }
     let account;
-    if (decoded.role === "user") {
+    if (decoded.role === "user" || decoded.role === "admin") {
       account = await prisma.users.findUnique({
         where: { id: decoded.id },
         select: {
@@ -368,7 +370,8 @@ export const refreshToken = async (
       }
     );
 
-    if (decoded.role === "user") setCookies(res, "accessToken", newAccessToken);
+    if (decoded.role === "user" || decoded.role === "admin")
+      setCookies(res, "accessToken", newAccessToken);
     else if (decoded.role === "seller")
       setCookies(res, "seller-access-token", newAccessToken);
 
@@ -544,6 +547,21 @@ export const getSeller = async (
       success: true,
       seller: sellerData,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdmin = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const admin = req.admin;
+
+    if (!admin) {
+      throw new ValidationError("Admin account not found");
+    }
+
+    const { password, ...adminData } = admin;
+    res.status(200).json({ admin: adminData });
   } catch (error) {
     next(error);
   }

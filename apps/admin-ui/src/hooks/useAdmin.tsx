@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 const fetchAdmin = async () => {
-  const response = await axiosInstance.get("/admin/api/logged-in-admin");
+  const response = await axiosInstance.get("/api/logged-in-admin");
   return response.data.admin;
 };
 const useAdmin = () => {

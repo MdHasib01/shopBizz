@@ -5,6 +5,7 @@ import {
   createstripeConnectLink,
   deleteUserAddress,
   forgotPassword,
+  getAdmin,
   getSeller,
   getUser,
   getUserAddresses,
@@ -20,7 +21,7 @@ import {
 } from "../controller/auth.controller.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
 import { createShop, verifySeller } from "../utils/auth.helper.js";
-import { isSeller } from "../middleware/authorizedRoles.js";
+import { isAdmin, isSeller } from "../middleware/authorizedRoles.js";
 
 const router: Router = express.Router();
 
@@ -41,6 +42,7 @@ router.post("/create-stripe-link", createstripeConnectLink);
 router.post("/login-seller", loginSeller);
 router.post("/login-admin", loginAdmin);
 router.get("/logged-in-seller", isAuthenticated, isSeller, getSeller);
+router.get("/logged-in-admin", isAuthenticated, isAdmin, getAdmin);
 router.get("/shipping-addresses", isAuthenticated, getUserAddresses);
 router.post("/add-address", isAuthenticated, addUserAddress);
 router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress);

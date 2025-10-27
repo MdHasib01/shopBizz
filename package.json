@@ -7,7 +7,8 @@
     "auth-docs": "node apps/auth-service/src/swagger.js",
     "product-docs": "node apps/product-service/src/swagger.js",
     "seller-ui": "pnpm dlx nx run seller-ui:dev",
-    "user-ui": "npx nx run-many --target=dev -all projects=user-ui"
+    "user-ui": "npx nx run-many --target=dev -all projects=user-ui",
+    "admin-ui": "npx nx run-many --target=dev -all projects=user-ui"
   },
   "private": true,
   "dependencies": {
@@ -60,6 +61,7 @@
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@swc/jest": "~0.2.36",
+    "@tailwindcss/postcss": "^4.1.8",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.18",
     "@types/ejs": "^3.1.5",

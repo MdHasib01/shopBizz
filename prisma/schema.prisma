@@ -237,7 +237,7 @@ model orders {
   userId          String       @db.ObjectId
   orderNumber     String   @unique
   shippingAddressId String? @db.ObjectId
-   shippingAddress   address?    @relation(fields: [shippingAddressId], references: [id])
+  shippingAddress   address?    @relation(fields: [shippingAddressId], references: [id])
   orderBy         String   @db.ObjectId
   user            users    @relation(fields: [orderBy], references: [id])
   discountAmount  Float?

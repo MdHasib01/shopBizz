@@ -3,25 +3,19 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
+  Box,
   Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
   ListOrdered,
   Wallet,
-  SquarePlus,
-  PackageOpen,
-  Calendar,
-  BellPlus,
   BellRing,
+  Users,
+  Store,
+  FileClock,
   Settings,
-  Mail,
-  Ticket,
+  PencilRuler,
+  LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -60,6 +54,13 @@ const data = {
       plan: "Free",
     },
   ],
+  dashboard: [
+    {
+      title: "Dashboard",
+      url: "/dashboard/orders",
+      icon: LayoutDashboard,
+    },
+  ],
   mainMenu: [
     {
       title: "Orders",
@@ -71,157 +72,56 @@ const data = {
       url: "/dashboard/payments",
       icon: Wallet,
     },
-  ],
-  products: [
     {
-      title: "Create Product",
-      url: "/dashboard/create-product",
-      icon: SquarePlus,
+      title: "Products",
+      url: "/dashboard/payments",
+      icon: Box,
     },
     {
-      title: "All Products",
-      url: "/dashboard/all-products",
-      icon: PackageOpen,
-    },
-  ],
-  events: [
-    {
-      title: "Create Event",
-      url: "/dashboard/create-event",
-      icon: Calendar,
+      title: "Events",
+      url: "/dashboard/payments",
+      icon: BellRing,
     },
     {
-      title: "All Events",
-      url: "/dashboard/events",
-      icon: BellPlus,
+      title: "Users",
+      url: "/dashboard/payments",
+      icon: Users,
+    },
+    {
+      title: "Sellers",
+      url: "/dashboard/payments",
+      icon: Store,
     },
   ],
   controllers: [
     {
-      title: "Inbox",
-      url: "/dashboard/inbox",
-      icon: Mail,
+      title: "Loggers",
+      url: "/dashboard/orders",
+      icon: FileClock,
     },
     {
-      title: "Settings",
-      url: "/dashboard/settings",
+      title: "Management",
+      url: "/dashboard/payments",
       icon: Settings,
     },
     {
       title: "Notifications",
-      url: "/dashboard/notifications",
+      url: "/dashboard/payments",
       icon: BellRing,
+    },
+  ],
+  customizations: [
+    {
+      title: "All Customizations",
+      url: "/dashboard/orders",
+      icon: PencilRuler,
     },
   ],
   extras: [
     {
-      title: "Discount Codes",
-      url: "/dashboard/discount-codes",
-      icon: Ticket,
-    },
-  ],
-  Events: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      title: "Logout",
+      url: "/dashboard/orders",
+      icon: LogOut,
     },
   ],
 };
@@ -233,12 +133,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
+        <NavMain items={data.dashboard} title={""} />
         <NavMain items={data.mainMenu} title={"Main Menu"} />
-        <NavMain items={data.products} title={"Products"} />
-        <NavMain items={data.events} title={"Events"} />
         <NavMain items={data.controllers} title={"Controllers"} />
+        <NavMain items={data.customizations} title={"Customizations"} />
         <NavMain items={data.extras} title={"Extras"} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

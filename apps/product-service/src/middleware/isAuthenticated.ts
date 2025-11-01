@@ -17,7 +17,6 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
       token,
       process.env.ACCESS_TOKEN_SECRET! as string
     ) as { id: string; role: "user" | "seller" };
-    console.log("decoded_role", decoded.role);
     if (!decoded) {
       return res.status(401).json({ error: "Unauthorized! Invalid token" });
     }

@@ -4,6 +4,7 @@ import {
   createPaymentIntent,
   createPaymentSession,
   getAdminOrders,
+  getOrderDetails,
   getSellerOrders,
   getUserOrders,
   updateDeliveryStatus,
@@ -22,7 +23,7 @@ router.get(
   verifyingPaymentSession
 );
 router.get("/get-seller-orders", isAuthenticated, isSeller, getSellerOrders);
-router.get("/get-order-details/:id", isAuthenticated, getSellerOrders);
+router.get("/get-order-details/:orderId", isAuthenticated, getOrderDetails);
 router.put("/update-status/:orderId", isAuthenticated, updateDeliveryStatus);
 router.put("/verify-coupon", isAuthenticated, verifyCouponCode);
 router.get("/get-user-orders", isAuthenticated, getUserOrders);

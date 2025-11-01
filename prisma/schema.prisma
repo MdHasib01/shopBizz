@@ -33,7 +33,7 @@ model users {
   shopFollows   shopFollowers[] 
   orders        orders[] 
   images      images[]
-  role        String
+  role        String @default("user")
   shopReviews shopReviews[]
   
 }

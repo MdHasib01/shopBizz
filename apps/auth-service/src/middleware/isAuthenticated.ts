@@ -48,7 +48,7 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
           role: true,
         },
       });
-      console.log("userAccount", userAccount);
+
       if (!userAccount || userAccount.role !== decoded.role) {
         return res
           .status(401)

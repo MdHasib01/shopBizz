@@ -91,7 +91,7 @@ const page = () => {
         header: "Actions",
         cell: ({ row }: any) => (
           <Link
-            href={`/order/${row.original.id}`}
+            href={`/dashboard/order/${row.original.id}`}
             className="text-blue-400 hover:text-blue-300 transition"
           >
             <Eye size={18} />

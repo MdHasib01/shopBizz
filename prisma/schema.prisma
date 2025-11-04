@@ -124,6 +124,7 @@ model discount_codes {
 
 enum productStatus {
   Active
+  Inactive
   Pending
   Draft
 }

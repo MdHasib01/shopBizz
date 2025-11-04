@@ -19,7 +19,7 @@ const page = () => {
         "/recommendation/api/get-recommended-products"
       );
       // return res.data.products;
-      return res.data.recommendations.products;
+      return res.data.recommendations;
     },
     staleTime: 1000 * 60 * 2,
     retry: 1,
@@ -56,6 +56,8 @@ const page = () => {
     staleTime: 1000 * 60 * 2,
     retry: 1,
   });
+
+  console.log("products", products);
 
   return (
     <div className="">

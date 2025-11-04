@@ -1,6 +1,6 @@
-import * as tf from "@tensorflow/tfjs-node";
 import { fetchUserActivity as getUserActivity } from "./fetchUserActivity";
 import { preProcessData } from "../utils/preProcessData";
+import tf from "../utils/tensorflow";
 
 const EMBEDDING_DIM = 50;
 
@@ -118,22 +118,29 @@ export const recommendProducts = async (
     interactions.map((d) => productMap[d.productId] ?? 0),
     "int32"
   );
-  const weightLabels = tf.tensor2d(
-    interactions.map((d) => {
-      switch (d.actionType) {
-        case "purchase":
-          return [1.0];
-        case "add_to_cart":
-          return [0.7];
-        case "add_to_wishlist":
-          return [0.5];
-        case "product_view":
-          return [0.1];
-        default:
-          return [0];
-      }
-    })[interactions.length - 1]
-  );
+  const interactionWeights = interactions.map((d) => {
+    switch (d.actionType) {
+      case "purchase":
+        return 1.0;
+      case "add_to_cart":
+        return 0.7;
+      case "add_to_wishlist":
+        return 0.5;
+      case "product_view":
+        return 0.1;
+      default:
+        return 0;
+    }
+  });
+
+  if (interactionWeights.length === 0) {
+    return [];
+  }
+
+  const weightLabels = tf.tensor2d(interactionWeights, [
+    interactionWeights.length,
+    1,
+  ]);
 
   await model.fit([userTensor, productTensor], weightLabels, {
     epochs: 5,

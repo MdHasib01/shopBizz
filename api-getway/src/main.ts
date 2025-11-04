@@ -43,10 +43,16 @@ app.get("/getway-health", (req, res) => {
   res.send({ message: "Welcome to api-getway!" });
 });
 
-app.use("/admin", proxy("http://localhost:6005"));
-app.use("/order", proxy("http://localhost:6004"));
-app.use("/product", proxy("http://localhost:6002"));
-app.use("/", proxy("http://localhost:6001"));
+const localBaseUrl =
+  process.env.API_GATEWAY_TARGET_HOST ||
+  "http://localhost" ||
+  "http://127.0.0.1";
+
+app.use("/recommendation", proxy(`${localBaseUrl}:6007`));
+app.use("/admin", proxy(`${localBaseUrl}:6005`));
+app.use("/order", proxy(`${localBaseUrl}:6004`));
+app.use("/product", proxy(`${localBaseUrl}:6002`));
+app.use("/", proxy(`${localBaseUrl}:6001`));
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {

@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import router from "./routes/recommendation.routes";
 
 const app = express();
 app.use(express.json({ limit: "100mb" }));
@@ -11,6 +12,7 @@ app.get("/", (req, res) => {
 });
 
 // Routes
+app.use("/api", router);
 
 const port = process.env.PORT || 6007;
 const server = app.listen(port, () => {

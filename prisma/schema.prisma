@@ -178,7 +178,8 @@ model userAnalytics {
   country     String?
   city        String?
   device      String?
-  actions     Json[]   // Array of action objects with productId, shopId, action, timestamp
+  recommendations Json?
+  actions     Json?   // Array of action objects with productId, shopId, action, timestamp
 
   @@map("userAnalytics")
 }
